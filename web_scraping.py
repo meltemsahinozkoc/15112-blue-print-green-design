@@ -1,7 +1,17 @@
-########### API Call
+########### API Call ##########
 # access token:
 # eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzE5NTgyMDksImV4cCI6MjA0NzMxODIwOSwidG9rZW5fdHlwZSI6ImRldmVsb3Blcl9hY2Nlc3MiLCJmaXJzdF9uYW1lIjoiTWVsdGVtIiwibGFzdF9uYW1lIjoiU2FoaW4gT3prb2MiLCJvY2N1cGF0aW9uIjoiU3R1ZGVudCIsInVzZXJfY29tcGFueSI6IkNNVSIsInVzZXJfZW1haWwiOiJtc2FoaW5vekBhbmRyZXcuY211LmVkdSJ9.nra6GVmWF2Wjt895AWcZjp35cmblbm7c7r0RNVHA0NM
 
+# web scraping from neutrium + heating degree day values.
+
+
+'''
+I structured the GET request to the website and checking validity (status code 200, 401, 404) myself. 
+However, I get help from ChatGPT model 4-o with canvas to structre the code code after parsing html to beautifulsoup.
+I used the generative model as an assistant. I didn't directly copy and paste the code. Instead, I made the generative model generate the code based on my prompt.
+Then I applied the 5-mins rule and wrote the code snippets myself.
+I know what the code is doing and I am confident that I can explain it (As I already explained in TP0 tech demo!).
+'''
 
 ############################################################
 # COMPONENTS
