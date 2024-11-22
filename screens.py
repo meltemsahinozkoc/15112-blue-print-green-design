@@ -7,7 +7,7 @@ def drawBg(app):
     drawRect(0,0,app.width, app.height, fill = app.fill)
 
 def draw0HomeScreen(app):    
-    buttons = Button(app.height/2, 3, app.width/3, 50,['1. Draw', '2. See', '3. Detail & Calculate'])
+    buttons = Button(app.height/2, 3, app.width/3, 50,['1 "DRAW"', '2 "DETAIL"', '3 "CALCULATE"'])
     buttons.draw()
 
     margin = 100
@@ -17,18 +17,28 @@ def draw0HomeScreen(app):
 
 
 def draw1DrawScreen(app):
-    buttons1 = Button(20, 4, app.width/4, 50,['PROJECT NAME', 'LOCATION', 'DIMENSIONS', 'HEIGHT'])
-    buttons2 = Button(app.height-100, 3, app.width/3, 50,['RESET', 'HELP', 'TOGGLE VIEW'])
-    buttons1.draw()
-    buttons2.draw()
+    buttonsTop = Button(0, 4, app.width/4, 50,['PROJECT NAME', 'LOCATION', 'DIMENSIONS', 'HEIGHT'])
+    buttonsTop2 = Button(50, 2, app.width/2, 50,['+ADD WINDOW', '+ADD DOOR'])
+    buttonsBottom = Button(app.height-50, 3, app.width/3, 50,['RESET', 'TOGGLE VIEW', 'HELP'])
+    buttonsTop.draw()
+    buttonsTop2.draw()
+    buttonsBottom.draw()
 
     
 
 def draw2DetailScreen(app):
-    pass
+    buttonsTop = Button(app.height/2, 5, app.width/5, 50,['WALLS (W)', 'WINDOWS (G)', 'DOORS (D)', 'FLOOR (F)', 'ROOF (R)'])
+    buttonsBottom = Button(app.height-50, 3, app.width/3, 50,['RESET', 'SAVE', 'HELP'])
+    buttonsTop.draw()
+    buttonsBottom.draw()
+    
 
 def draw3CalculateScreen(app):
-    pass
+    drawLabel('TRANSMISSION LOSSES', app.width/2, app.height/8, size=24, fill='white', bold=True, font=app.font)
+    buttonsBottom = Button(app.height-50, 3, app.width/3, 50,['RESET', 'SAVE', 'HELP'])
+    drawLabel('RETROFIT SUGGESTIONS', app.width/2, app.height-250, size=24, fill='white', bold=True, font=app.font)
+    buttonsBottom.draw()
+
 
 def draw3_1PopUp(app):
     pass

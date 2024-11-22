@@ -82,29 +82,50 @@ def handleClickHomeScreen(app, mouseX, mouseY):
                 app.screen = 'detail_calculate'
 
 def handleClickDrawScreen(app, mouseX, mouseY):
+    name = ''
+    location = ''
+    app.building = Building(name, location, app.bldgLenght, app.bldgWidth, app.bldgHeight)
+    if mouseY > 0 and mouseY < 50:
+        if mouseX > 0 and mouseX < app.width/4:
+            name = app.getTextInput('Enter project name: ')
+        elif mouseX > app.width/4 and mouseX < app.width/2:
+            location = app.getTextInput('Enter location: ')
+        elif mouseX > app.width/2 and mouseX < 3*app.width/4:
+            app.bldgLenght = int(app.getTextInput('Enter building length: '))
+            app.bldgWidth = int(app.getTextInput('Enter building width: '))
+            if isValidDimension(app, app.bldgWidth) and isValidDimension(app, app.bldgLenght) and hasAllParametersSet(app):
+                    app.building.drawRoom()
+                    app.building.drawMeasureLines()
+            else:
+                app.showMessage('Invalid dimension. Please enter a value between 100-600.')
+        elif mouseX > 3*app.width/4 and mouseX < app.width:
+            app.bldgHeight = int(app.getTextInput('Enter building height: '))
+    
+
+    if mouseY > 50 and mouseY < 100:
+        if mouseX > 0 and mouseX < app.width/2:
+            app.windows.append(Window(5,0,0,0)) # wrong!!!
+        elif mouseX > app.width/2 and mouseX < app.width:
+            app.doors.append(Door(2.5,0,0,0)) # wrong!!!
+
+    if mouseY > app.height-50:
+        if mouseX > 0 and mouseX < app.width/3:
+            reset(app)
+        elif mouseX > app.width/3 and mouseX < 2*app.width/3:
+            app.building.toggleView()
+        elif mouseX > 2*app.width/3:
+            app.help = True
+            app.screen = 'home' # or show message
+
+    
+def handleClickDetailCalculateScreen(app, mouseX, mouseY):
     pass
-    # if *:
-    #     app.bldgLenght = app.getUserInput('Enter building length: ')
-    #     app.bldgWidth = app.getUserInput('Enter building width: ')
-    #     app.building = Building(app.bldgLenght, app.bldgWidth)
 
-    #     if isValidDimension(app, app.bldgWidth) and isValidDimension(app, app.bldgLenght):
-    #         app.building.drawRoom()
-    #         app.building.drawMeasureLines()
-    #     else:
-    #         app.showMessage('Invalid dimension. Please enter a value between 100-600.')
-    
-    # if *:
-    #     if app.help == True:
-    #         app.screen = 'home'
-    
+def isValidDimension(app, dimension):
+    return dimension > 100 and dimension < 600
 
-# def handleClickDetailCalculateScreen(app, mouseX, mouseY):
-#     pass
-
-# def isValidDimension(app, dimension):
-#     return dimension > 100 and dimension < 600
-
+def hasAllParametersSet(app):
+    return app.building.name and app.building.location and app.bldgHeight and app.bldgWidth and app.bldgLenght
 
 
 

@@ -2,11 +2,12 @@
 from cmu_graphics import *
 
 class Building:
-    def __init__(self, location, lenght, width):
+    def __init__(self, name, location, lenght, width, height):
+        self.name = name
+        self.location = location
         self.bldgLenght = 0
         self.bldgWidth = 0
-        self.bldgLenght = lenght
-        self.location = location
+        self.height = height
 
         self.cx = lenght/2
         self.cy = width/2
@@ -36,7 +37,7 @@ class BuildingComponent:
 
     def calculateRValue(self):
         return 1 / self.uValue
-
+    
 
 class Wall(BuildingComponent):
     def __init__(self, length, width, height, uValue):
