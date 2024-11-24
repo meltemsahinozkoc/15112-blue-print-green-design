@@ -8,12 +8,20 @@ class Building:
         self.width = width
         self.height = height
 
-        self.name = f'Project {(app.projectCount) + 1}'
+        self.name = f'Project {(app.gallery.projectCount) + 1}'
         self.location = 'Unknown Location'
+        self.annnualHeatLoss = 'N/A'
 
     def drawBuilding(self):
         drawRect(app.width/2, app.height/2, self.width, self.length, fill = None, border = 'white', borderWidth = 15, align = 'center')
 
+    def createScaledBuildingIcon(self):
+        scaleFactor = 0.2
+        scaledLenght = self.lenght * scaleFactor
+        scaledWidth = self.width * scaleFactor
+        scaledHeight = self.height * scaleFactor
+        return Building(scaledLenght, scaledWidth, scaledHeight)
+    
     def drawMeasureLines(self):
         paddingDist = 15
         textDist = 25
@@ -44,7 +52,12 @@ class Building:
     def __repr__(self):
         return f'{self.name} at {self.location} with dimensions {self.length}x{self.width}x{self.height}cm'
     
-
+    def save(self):
+        app.gallery.items.append(app.building)
+        app.showMessage(f'{app.building.name} at {app.building.location} with dimensions ' + 
+                        f'{app.building.length}x{app.building.width}x{app.building.height} cm is saved to gallery!')
+        print(app.gallery.items)
+        
 class BuildingComponent:
     def __init__(self, length, height, uValue): 
         self.length = length
@@ -57,7 +70,6 @@ class BuildingComponent:
     def calculateRValue(self):
         return 1 / self.uValue
     
-
 class Wall(BuildingComponent):
     def __init__(self, length, height, width, uValue):
         super().__init__(length, height, uValue)
@@ -67,57 +79,38 @@ class Wall(BuildingComponent):
         return ((self.length * self.height) + (self.width * self.height)) * 2
 
 class Window(BuildingComponent):
+    def __init__(self, length, height, uValue, cx, cy):
+        super().__init__(length, height, uValue)
+        self.type = None
+        self.cx = cx
+        self.cy = cy
+    
     def draw(self):
-        print(self.length)
-        drawRect(app.cx, app.cy, 30, self.length, fill = app.fill, align = 'center')
-        drawLine(app.cx, app.cy - self.length/2, app.cx, app.cy + self.length/2, fill = 'white', lineWidth = 1)
+        if self.type == 'vertical':
+            drawRect(self.cx, self.cy, 30, self.length, fill = app.fill, align = 'center')
+            drawLine(self.cx, self.cy - self.length/2, self.cx, self.cy + self.length/2, fill = 'white', lineWidth = 1)
+        elif self.type == 'horizontal':
+            drawRect(self.cx, self.cy, self.length, 30, fill = app.fill, align = 'center')
+            drawLine(self.cx - self.length/2, self.cy, self.cx + self.length/2, self.cy, fill = 'white', lineWidth = 1)
 
 class Door(BuildingComponent):
+    def __init__(self, length, height, uValue, cx, cy):
+        super().__init__(length, height, uValue)
+        self.type = None
+        self.cx = cx
+        self.cy = cy
+
     def draw(self):
-        print(self.length)
-        drawRect(app.cx, app.cy, 30, self.length, fill = app.fill, align = 'center')
-        drawLine(app.cx, app.cy - self.length/2, app.cx - self.length/2, app.cy - self.length/2 + self.length/2, fill = 'white', lineWidth = 1) # draw 45 degree line
+        if self.type == 'vertical':
+            drawRect(self.cx, self.cy, 30, self.length, fill = app.fill, align = 'center')
+            drawLine(self.cx, self.cy - self.length/2, self.cx - self.length/2, self.cy - self.length/2 + self.length/2, fill = 'white', lineWidth = 1)
+        elif self.type == 'horizontal':
+            drawRect(self.cx, app.cy, self.length, 30, fill = app.fill, align = 'center')
+            drawLine(self.cx - self.length/2, self.cy, self.cx - self.length/2 + self.length/2,self.cy - self.length/2, fill = 'white', lineWidth = 1)
 
 class Floor(BuildingComponent):
     pass
 
 class Roof(BuildingComponent):
     pass
-
-
-def calculateHeatLossCoefficient(app):
-    totalArea = 0
-    totalRValue = 0
-
-    for wall in app.walls:
-        totalArea += wall.calculateArea()
-    for window in app.windows:
-        totalArea += window.calculateArea()
-        totalRValue += window.calculateRValue()
-    for door in app.doors:
-        totalArea += door.calculateArea()
-        totalRValue += door.calculateRValue()
-    for floor in app.floors:
-        totalArea += floor.calculateArea()
-        totalRValue += floor.calculateRValue()
-    for roof in app.roofs:
-        totalArea += roof.calculateArea()
-        totalRValue += roof.calculateRValue()
-    
-    totalUValue = 1/totalRValue
-    return totalArea * totalUValue
-
-def calculateInfiltrationHeatLoss(app):
-    ACH = 1.0
-    heatCapacityAir = 0.018 # BTU/hr*ft^3*F
-    volume = app.building.length * app.building.width * app.building.height
-    return ACH * heatCapacityAir * volume
-
-
-def calculateAnnualHeatLoss(app,walls, windows, doors, floors, roofs):
-    heatLossCoefficient = calculateHeatLossCoefficient(app,walls)
-    return heatLossCoefficient * 24 * app.heatingDegreeDays65F # BTU * 10^6 = MMBTU
-
-def calculateTotalHeatLoss(app,walls, windows, doors, floors, roofs):
-    return calculateAnnualHeatLoss(app,walls) + calculateInfiltrationHeatLoss(app)
 

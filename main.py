@@ -5,18 +5,21 @@ from web_scraping import *
 from screens import *
 from utils import *
 
+########################################################
+################### INITIALIZE APP #####################
+########################################################
+
 def onAppStart(app):
     initializeHomeScreen(app)
-    app.buildingGallery = []
-    app.projectCount = len(app.buildingGallery)
+    app.gallery = Gallery()
+
     reset(app)
 
 def reset(app):
     initilaizeBuilding(app)
-    # mouse
+    # mouse position
     app.cx = None 
     app.cy = None
-    app.help = False
 
 def initilaizeBuilding(app):
     stdWallHeight = 6.5
@@ -28,52 +31,79 @@ def initilaizeBuilding(app):
     app.floors = []
     app.roofs = []
 
+    app.addWindow = False
+    app.addDoor = False
+
 def initializeHomeScreen(app):
     app.screen= 'home'
     app.fill = 'mediumblue'
     app.font = 'monospace'
-    app.instruction = ('''BLUE PRINT GREEN DESIGN ia an interactive app for anyone who wants to create and visualize simple building plans\n
-    in 2D and calculate their heat loss. The app allows users to design layouts by defining dimensions and location,
-    adding walls, windows, doors, floors, and roofs. The “Detail” and “Calculate” stages allow users to either directly
-    input component U-values (thermal transmittance) or enter material layers and thicknesses for each building component.
-    The app plans to use web-scraping to fetch thermal conductivity and heating degree day values for heat loss calculations.
-    After the heat loss calculations, the “4. Calculate” screen will break down the building’s heat loss, detect the least
-    efficient components, and give prioritized retrofit suggestions. This project aims to integrate design and basic sustainability\n
-    evaluation in a user-friendly, visually compelling interface.''')
+    app.instruction = ('''WHAT
+BLUE PRINT GREEN DESIGN aims to integrate design and basic sustainability
+evaluation in a user-friendly, visually compelling interface.  
+It is an interactive app for anyone who wants to create and visualize
+simple building plans in 2D and calculate their heat loss.
+
+HOW
+The app allows users to design layouts by defining dimensions and location,
+adding walls, windows, doors, floors, and roofs. The “Detail” and “Calculate”
+stages allow users to either directly input component U-values (thermal transmittance value)
+or enter material layers and thicknesses for each building component.
+
+The app uses web-scraping to fetch thermal conductivity for heat loss calculations.
+After the heat loss calculations, the “3. Calculate” screen will break down the building’s
+heat loss, detect the least efficient components, and give prioritized
+retrofit suggestions.''')
+
+
+########################################################
+####################### DRAWING ########################
+########################################################
 
 def redrawAll(app):
     drawBg(app)
     if app.screen == 'home':
         draw0HomeScreen(app)
+        if app.gallery.projectCount != 0:
+            app.gallery.draw()
+            print('Drawing gallery')
     elif app.screen == 'draw':
-        # drawRect(app.width/2,app.height/2,600, 600, fill = None, border = 'White', borderWidth = 15, align = 'center')
         draw1DrawScreen(app)
         if app.building != None:
             app.building.drawBuilding()
             app.building.drawMeasureLines()
-        if len(app.windows) != 0:
+        if len(app.windows) > 0:
             drawWindows(app)
-        if len(app.doors) != 0:
+        if len(app.doors) > 0:
             drawDoors(app)
-        
-        
     elif app.screen == 'detail':
         draw2DetailScreen(app)
     elif app.screen == 'calculate':
         draw3CalculateScreen(app)
+    elif app.screen == 'detailWalls':
+        drawDetailWallsScreen(app)
+    elif app.screen == 'detailWindows':
+        drawDetailWindowsScreen(app)
+    elif app.screen == 'detailDoors':
+        drawDetailDoorsScreen(app)
+    elif app.screen == 'detailFloor':
+        drawDetailFloorsScreen(app)
+    elif app.screen == 'detailRoof':
+        drawDetailRoofsScreen(app)
     
-
 def drawWindows(app):
-    if (app.width/2 - app.building.length/2 < app.cx < app.width/2 + app.building.length/2
-        and app.height/2 - app.building.width/2 < app.cy < app.height/2 + app.building.width/2):
-        for window in app.windows:
+    for window in app.windows:
+        if window.type != None:
             window.draw()
-
+                
 def drawDoors(app):
-    if (app.width/2 - app.building.length/2 < app.cx < app.width/2 + app.building.length/2
-        and app.height/2 - app.building.width/2 < app.cy < app.height/2 + app.building.width/2):
-        for door in app.doors:
+    for door in app.doors:
+        if door.type != None:
             door.draw()
+
+########################################################
+################# MOUSE AND KEY EVENTS #################
+########################################################
 
 def onKeyPress(app, key):
     if key == '0':
@@ -84,6 +114,19 @@ def onKeyPress(app, key):
         app.screen = 'detail'
     elif key == '3':
         app.screen = 'calculate'
+
+    if app.screen == 'detail':
+        if key == 'w':
+            app.screen = 'detailWalls'
+        elif key == 'g':
+            app.screen = 'detailWindows'
+        elif key == 'd':
+            app.screen = 'detailDoors'
+        elif key == 'f':
+            app.screen = 'detailFloor'
+        elif key == 'r':
+            app.screen = 'detailRoof'
+
 
 def onMousePress(app, mouseX, mouseY):
     app.cx = mouseX
@@ -96,15 +139,26 @@ def onMousePress(app, mouseX, mouseY):
         handleClickDetailScreen(app, mouseX, mouseY)
     elif app.screen == 'calculate':
         handleClickCalculateScreen(app, mouseX, mouseY)
-        
+
+    elif app.screen == 'detailWalls':
+        handleClickDetailWallsScreen(app, mouseX, mouseY)
+    elif app.screen == 'detailWindows':
+        handleClickDetailWindowsScreen(app, mouseX, mouseY)
+    elif app.screen == 'detailDoors':
+        handleClickDetailDoorsScreen(app, mouseX, mouseY)
+    elif app.screen == 'detailFloor':
+        handleClickDetailFloorScreen(app, mouseX, mouseY)
+    elif app.screen == 'detailRoof':
+        handleClickDetailRoofScreen(app, mouseX, mouseY)
+    
 def handleClickHomeScreen(app, mouseX, mouseY):
     if mouseY > app.height/2 and mouseY < app.height/2 + 50:
             if mouseX > 0 and mouseX < app.width/3 :
                 app.screen = 'draw'
-            elif mouseX > app.width:
-                app.screen = 'see'
+            elif mouseX > app.width/3 and mouseX < 2*app.width/3:
+                app.screen = 'detail'
             elif mouseX > 2*app.width/3:
-                app.screen = 'detail_calculate'
+                app.screen = 'calculate'
 
 def handleClickDrawScreen(app, mouseX, mouseY):   
     # top buttons 
@@ -140,16 +194,43 @@ def handleClickDrawScreen(app, mouseX, mouseY):
     # +add window/door buttons
     if mouseY > 50 and mouseY < 100:
         if mouseX > 0 and mouseX < app.width/2:
+            app.addWindow = True
+
+        elif mouseX > app.width/2 and mouseX < app.width:
+            app.addDoor = True
+    
+    if isMouseClickOnTheWall(app):
+        if app.addWindow:
             stdWindowLenght = 40
             stdWindowHeight = 60
             stdWindowUValue = 5
-            app.windows.append(Window(stdWindowLenght,stdWindowHeight,stdWindowUValue))
+            newWindow = Window(stdWindowLenght,stdWindowHeight,stdWindowUValue, mouseX, mouseY)
+            app.windows.append(newWindow)
+            newWindow.type = classifyComponentAllignment(app)
+            app.addWindow = False
 
-        elif mouseX > app.width/2 and mouseX < app.width:
+        elif app.addDoor:
             stdDoorLength = 60
             stdDoorHeight = 180
             stdDoorUValue = 1
-            app.doors.append(Door(stdDoorLength,stdDoorHeight,stdDoorUValue))
+            newDoor = Door(stdDoorLength,stdDoorHeight,stdDoorUValue, mouseX, mouseY)
+            app.doors.append(newDoor)
+            newDoor.type = classifyComponentAllignment(app)
+            app.addDoor = False
+            
+    # bottom2 buttons:
+    if mouseY > app.height-100:
+        if mouseX > 0 and mouseX < app.width/4:
+            if len(app.windows) > 0:
+                app.windows.pop()
+        elif mouseX > app.width/4 and mouseX < app.width/2:
+            if len(app.doors) > 0:
+                app.doors.pop()
+        elif mouseX > app.width/2 and mouseX < 3*app.width/4:
+            app.screen = 'home'
+        elif mouseX > 3*app.width/4:
+            app.screen = 'detail'
+        
 
     # bottom buttons
     if mouseY > app.height-50:
@@ -158,17 +239,137 @@ def handleClickDrawScreen(app, mouseX, mouseY):
         elif mouseX > app.width/3 and mouseX < 2*app.width/3:
             app.building.toggleView()
         elif mouseX > 2*app.width/3:
-            app.help = True
-            app.screen = 'home' # or show message
+            app.showMessage(app.instruction) # or go to screen "home"?
 
 
 def handleClickDetailScreen(app, mouseX, mouseY):
-    pass
+    # middle component buttons
+    if mouseY > app.height/2 and mouseY < app.height/2 + 50:
+        if mouseX > 0 and mouseX < app.width/5:
+            app.screen = 'detailWalls'
+        elif mouseX > app.width/5 and mouseX < 2*app.width/5:
+            app.screen = 'detailWindows'
+        elif mouseX > 2*app.width/5 and mouseX < 3*app.width/5:
+            app.screen = 'detailDoors'
+        elif mouseX > 3*app.width/5 and mouseX < 4*app.width/5:
+            app.screen = 'detailFloor'
+        elif mouseX > 4*app.width/5 and mouseX < app.width:
+            app.screen = 'detailRoof'
+    
+    # bottom2 buttons
+    if mouseY > app.height-100:
+        if mouseX > 0 and mouseX < app.width/2:
+            app.screen = 'draw'
+        elif mouseX > app.width/2:
+            app.screen = 'calculate'
+
+    # bottom buttons
+    if mouseY > app.height-50:
+        if mouseX > 0 and mouseX < app.width/3:
+            reset(app)
+        elif mouseX > app.width/3 and mouseX < 2*app.width/3:
+            app.building.save()
+            
+        elif mouseX > 2*app.width/3:
+            app.showMessage(app.instruction)
+            
+def handleClickDetailWallsScreen(app, mouseX, mouseY):
+    # top buttons
+    if mouseY > 0 and mouseY < 50:
+        if mouseX > 0 and mouseX < app.width/2:
+            app.screen = 'detail'
+        elif mouseX > app.width/2:
+            app.screen = 'detailWindows'
+
+def handleClickDetailWindowsScreen(app, mouseX, mouseY):
+    # top buttons
+    if mouseY > 0 and mouseY < 50:
+        if mouseX > 0 and mouseX < app.width/2:
+            app.screen = 'detailWalls'
+        elif mouseX > app.width/2:
+            app.screen = 'detailDoors'
+
+def handleClickDetailDoorsScreen(app, mouseX, mouseY):
+    # top buttons
+    if mouseY > 0 and mouseY < 50:
+        if mouseX > 0 and mouseX < app.width/2:
+            app.screen = 'detailWindows'
+        elif mouseX > app.width/2:
+            app.screen = 'detailFloor'
+
+def handleClickDetailFloorScreen(app, mouseX, mouseY):
+    # top buttons
+    if mouseY > 0 and mouseY < 50:
+        if mouseX > 0 and mouseX < app.width/2:
+            app.screen = 'detailDoors'
+        elif mouseX > app.width/2:
+            app.screen = 'detailRoof'
+
+def handleClickDetailRoofScreen(app, mouseX, mouseY):
+    # top buttons
+    if mouseY > 0 and mouseY < 50:
+        if mouseX > 0 and mouseX < app.width/2:
+            app.screen = 'detailFloor'
+        elif mouseX > app.width/2:
+            app.screen = 'detail'
+
 
 def handleClickCalculateScreen(app, mouseX, mouseY):
-    pass
+    # bottom buttons
+    if mouseY > app.height-50:
+        if mouseX > 0 and mouseX < app.width/3:
+            reset(app)
+        elif mouseX > app.width/3 and mouseX < 2*app.width/3:
+            app.building.save()
+        elif mouseX > 2*app.width/3:
+            app.showMessage(app.instruction)
+    
+    # bottom2 buttons
+    if mouseY > app.height-100:
+        if mouseX > 0 and mouseX < app.width/2:
+            app.screen = 'detail'
+        elif mouseX > app.width/2:
+            app.screen = 'home'
+
+
+def classifyComponentAllignment(app): # vertical, horizontal, None
+    wallWidth = 15
+
+    halfLength = app.building.length/2
+    halfWidth = app.building.width/2
+
+    innerLeft = app.width/2 - halfWidth + wallWidth
+    innerRight = app.width/2 + halfWidth - wallWidth
+    innerTop = app.height/2 - halfLength + wallWidth
+    innerBottom = app.height/2 + halfLength - wallWidth
+
+    if app.cx < innerLeft or app.cx > innerRight: # vertical or horizontal allignment
+        return "vertical" 
+    elif app.cy < innerTop or app.cy > innerBottom:
+        return "horizontal" 
+    return None
+
+def isMouseClickOnTheWall(app): # T/F
+    wallWidth = 15
+
+    halfLength = app.building.length/2
+    halfWidth = app.building.width/2
+
+    outerLeft = app.width/2 - halfWidth
+    outerRight = app.width/2 + halfWidth
+    outerTop = app.height/2 - halfLength
+    outerBottom = app.height/2 + halfLength
+
+    innerLeft = app.width/2 - halfWidth + wallWidth
+    innerRight = app.width/2 + halfWidth - wallWidth
+    innerTop = app.height/2 - halfLength + wallWidth
+    innerBottom = app.height/2 + halfLength - wallWidth
+
+    return ((outerLeft <= app.cx <= outerRight and outerTop <= app.cy <= outerBottom) and 
+        not (innerLeft <= app.cx <= innerRight and innerTop <= app.cy <= innerBottom))
 
 
 def main():
     runApp(width=1000, height=1000)
 main()
+

@@ -1,6 +1,85 @@
 # unit conversion, area calculation, data validation/formatting, buttons etc.
 from cmu_graphics import *
 
+########################################################
+#################### DATA VALIDATION ###################
+########################################################
+
+def isValidDimension(app, dimension):
+    if not dimension.isdigit() or dimension == None or int(dimension) < 100 or int(dimension) > 600:
+        app.showMessage('Invalid dimension. Please enter a value between 100-600.')
+        return False
+    return True
+
+def isValidHeight(app, dimension):
+    if not dimension.isdigit() or dimension == None or int(dimension) < 6 or int(dimension) > 35:
+        app.showMessage('Invalid dimension. Please enter a value between 0-10!')
+        return False
+    return True
+
+def hasAllParametersSet(app):
+    if isValidDimension(app.building.length) and isValidDimension(app.building.width):
+        return app.building.name and app.building.location and app.buidling.height
+    return False
+
+def castCmToMeter(app, dimension):
+    return dimension * 100
+
+########################################################
+################ HEAT LOSS CALCULATIONS ################
+########################################################
+
+def calculateHeatLossCoefficient(app):
+    """
+    Calculates components' heat loss coefficient using total area and U-Value(Transmissiont coefficient).
+
+    Parameters:
+    - total area (float): The area of the building component in m².
+    - total u-value (float): The U-value(1/R-value) of the component in W/m²K.
+
+    Returns:
+    - float: Heat loss coefficient in W/K.
+    """
+    totalArea = 0
+    totalRValue = 0
+
+    for wall in app.walls:
+        totalArea += wall.calculateArea()
+    for window in app.windows:
+        totalArea += window.calculateArea()
+        totalRValue += window.calculateRValue()
+    for door in app.doors:
+        totalArea += door.calculateArea()
+        totalRValue += door.calculateRValue()
+    for floor in app.floors:
+        totalArea += floor.calculateArea()
+        totalRValue += floor.calculateRValue()
+    for roof in app.roofs:
+        totalArea += roof.calculateArea()
+        totalRValue += roof.calculateRValue()
+    
+    totalUValue = 1/totalRValue
+    return totalArea * totalUValue
+
+def calculateInfiltrationHeatLoss(app):
+    ACH = 1.0
+    heatCapacityAir = 0.018 # BTU/hr*ft^3*F
+    volume = app.building.length * app.building.width * app.building.height
+    return ACH * heatCapacityAir * volume
+
+
+def calculateAnnualHeatLoss(app,walls, windows, doors, floors, roofs):
+    heatLossCoefficient = calculateHeatLossCoefficient(app,walls)
+    return heatLossCoefficient * 24 * app.heatingDegreeDays65F # BTU * 10^6 = MMBTU
+
+def calculateTotalHeatLoss(app,walls, windows, doors, floors, roofs):
+    return calculateAnnualHeatLoss(app,walls) + calculateInfiltrationHeatLoss(app)
+
+
+########################################################
+##################### UI COMPONENTS ####################
+########################################################
+
 class Button:
     def __init__(self, top, buttonNum, buttonStep, buttonHeight, text):
         self.buttonNum = buttonNum
@@ -25,76 +104,51 @@ class Button:
         
 
 class Icon:
-    def __init__(self, r, origin, name = None, lineColor='black', lineWidth=2):
+    def __init__(self, r, origin, name=None, lineColor='white', lineWidth=1):
         self.r = r
         self.origin = origin
         self.name = name
         self.lineColor = lineColor
         self.lineWidth = lineWidth
     
-    def draw(self, app, lineColor, fillColor):
+    def draw(self, app):
+        lineColor, fillColor = 'white'
         cx, cy = self.origin
         r = self.r
         if self.name == 'Forward Arrow':
             drawLabel(cx,cy-r, text='→', fill=lineColor, 
-                                        font=Button.font)
+                                        font=app.font)
             drawLabel(cx,cy+r, text='F', fill=lineColor, 
-                                        font=Button.font)
+                                        font=app.font)
         elif self.name == 'Backward Arrow':
             drawLabel(cx,cy-r, text='←', fill=lineColor, 
-                                        font=Button.font)
+                                        font=app.font)
             drawLabel(cx,cy+r, text='B', fill=lineColor, 
-                                        font=Button.font)
+                                        font=app.font)
         
         elif self.name == 'Help':
             drawLabel(cx,cy, text='?', fill=lineColor, 
-                                        font=Button.font)
-        
+                                        font=app.font)
+            drawCircle(cx,cy,r, fill=fillColor, border=lineColor, borderWidth=self.lineWidth)
+        elif self.name == 'Save':
+            pass
+
 
 class Gallery:
     def __init__(self):
-        pass
+        self.items = []
+        self.projectCount = len(self.items)
     
-    def draw(self):
-        # rect
-        # image
-        # self.name below
-        pass
+    def draw(self): # revise
+        for i in range(self.projectCount):
+            drawRect(i*(app.width/self.projectCount), 700, 50, 50, fill = 'None', border = 'white', borderWidth = 1)
+            
+            currBuilding = self.items[i]
+            newBuilding = currBuilding.createScaledBuildingIcon()
+            drawRect(i*app.width/self.projectCount, 700, newBuilding.width, newBuilding.length, fill = 'None', border = 'white', borderWidth = 3)
 
-    def save(self):
-        app.buildingGallery.append(app.building)
-        app.building = None
-
-class Project:
-    def __init__(self,name,length,width):
-        self.name = name
-        self.length = length
-        self.width = width
-    
-    def addWindow(self):
-        pass
-    
-    def addDoor(self):
-        pass
-
-    def toggleView(self):
-        pass
-    
-def isValidDimension(app, dimension):
-    if not dimension.isdigit() or dimension == None or int(dimension) < 100 or int(dimension) > 600:
-        app.showMessage('Invalid dimension. Please enter a value between 100-600.')
-        return False
-
-    return True
-
-def isValidHeight(app, dimension):
-    if not dimension.isdigit() or dimension == None or int(dimension) < 6 or int(dimension) > 35:
-        app.showMessage('Invalid dimension. Please enter a value between 0-10!')
-        return False
-    return True
-
-def hasAllParametersSet(app):
-    if isValidDimension(app.building.length) and isValidDimension(app.building.width):
-        return app.building.name and app.building.location and app.buidling.height
-    return False
-
+            drawLabel(currBuilding.name, i*app.width/self.projectCount, 650, fill = 'white', bold = True, size = 16)
+            drawLabel(currBuilding.location, i*app.width/self.projectCount, 675, fill = 'white', size = 12)
+            drawLabel(f'{currBuilding.length}x{currBuilding.width}x{currBuilding.height}cm', i*app.width/self.projectCount, 700, fill = 'white', size = 12)
+            
+            drawLabel(f'{currBuilding.annualHeatLoss:.2f} MMBTU', i*app.width/self.projectCount, 725, fill = 'white', size = 12)
