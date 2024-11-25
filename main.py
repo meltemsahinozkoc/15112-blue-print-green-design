@@ -1,6 +1,6 @@
 # init + transition bw screens
 from cmu_graphics import *
-from components import *
+from building_components import *
 from web_scraping import *
 from screens import *
 from utils import *
@@ -18,6 +18,7 @@ def onAppStart(app):
 
     reset(app)
 
+
     app.currentComponent = None
     app.thermalData = fetchFilteredThermalData()
     app.materialRValueDict = dict()
@@ -27,6 +28,7 @@ def onAppStart(app):
 
 def reset(app):
     initilaizeBuilding(app)
+
     # mouse position
     app.cx = None 
     app.cy = None
@@ -34,8 +36,10 @@ def reset(app):
     # app.hy = None
     # app.mouseOverButton = False
 
+    app.pageHistory = []
+
 def initilaizeBuilding(app):
-    stdWallHeight = 6.5
+    stdWallHeight = 250
     app.building = Building(200,200,stdWallHeight) # default building
     
     app.windows = []
@@ -146,6 +150,13 @@ def onMousemove(app, mouseX, mouseY):
 def onMousePress(app, mouseX, mouseY):
     app.cx = mouseX
     app.cy = mouseY
+
+    if app.pageHistory == []:
+        app.pageHistory.append(app.screen)
+    elif app.pageHistory[-1] != app.screen:
+        app.pageHistory.append(app.screen)
+    # print(app.pageHistory)
+
     if app.screen == 'home':
         handleClickHomeScreen(app, mouseX, mouseY)
     elif app.screen == 'draw':
@@ -154,7 +165,6 @@ def onMousePress(app, mouseX, mouseY):
         handleClickDetailScreen(app, mouseX, mouseY)
     elif app.screen == 'calculate':
         handleClickCalculateScreen(app, mouseX, mouseY)
-
     elif app.screen == 'detailWalls':
         app.currentComponent = app.walls
         handleClickDetailWallsScreen(app, mouseX, mouseY)
@@ -194,7 +204,6 @@ def handleClickDrawScreen(app, mouseX, mouseY):
 
         elif mouseX > app.width/4 and mouseX < app.width/2:
             app.building.location = app.getTextInput('Enter location: ')
-            
         elif mouseX > app.width/2 and mouseX < 3*app.width/4:
             inputHeight = app.getTextInput('Enter building height (Between 6-35): ')
             if isValidHeight(app, inputHeight):
@@ -253,7 +262,7 @@ def handleClickDrawScreen(app, mouseX, mouseY):
             if len(app.doors) > 0:
                 app.doors.pop()
         elif mouseX > app.width/2 and mouseX < 3*app.width/4:
-            app.screen = 'home'
+            navigateBack(app)
         elif mouseX > 3*app.width/4:
             app.screen = 'detail'
         
@@ -265,7 +274,7 @@ def handleClickDrawScreen(app, mouseX, mouseY):
         elif mouseX > app.width/3 and mouseX < 2*app.width/3:
             app.building.toggleView()
         elif mouseX > 2*app.width/3:
-            app.showMessage(app.instruction) # or go to screen "home"?
+            app.screen = 'home' # or go to screen "home"?
 
 def classifyComponentAllignment(app): # vertical, horizontal, None
     wallWidth = 15
@@ -318,28 +327,22 @@ def handleClickDetailScreen(app, mouseX, mouseY):
         elif mouseX > 4*app.width/5 and mouseX < app.width:
             app.screen = 'detailRoof'
     
-    # bottom2 buttons
-    if mouseY > app.height-100:
-        if mouseX > 0 and mouseX < app.width/2:
-            app.screen = 'draw'
-        elif mouseX > app.width/2:
-            app.screen = 'calculate'
-
     # bottom buttons
     if mouseY > app.height-50:
-        if mouseX > 0 and mouseX < app.width/3:
+        if mouseX > 0 and mouseX < app.width/4:
             reset(app)
-        elif mouseX > app.width/3 and mouseX < 2*app.width/3:
-            app.building.save()
-            
-        elif mouseX > 2*app.width/3:
-            app.showMessage(app.instruction)
-            
+        elif mouseX > app.width/4 and mouseX < app.width/2:
+            app.screen = 'home'
+        elif mouseX > app.width/2 and mouseX < 3*app.width/4:
+            navigateBack(app)
+        elif mouseX > 3*app.width/4:
+            app.screen = 'calculate'
+
 def handleClickDetailWallsScreen(app, mouseX, mouseY):
     # top buttons
     if mouseY > 0 and mouseY < 50:
         if mouseX > 0 and mouseX < app.width/2:
-            app.screen = 'detail'
+            navigateBack(app)
         elif mouseX > app.width/2:
             app.screen = 'detailWindows'
 
@@ -347,7 +350,7 @@ def handleClickDetailWindowsScreen(app, mouseX, mouseY):
     # top buttons
     if mouseY > 0 and mouseY < 50:
         if mouseX > 0 and mouseX < app.width/2:
-            app.screen = 'detailWalls'
+            navigateBack(app)
         elif mouseX > app.width/2:
             app.screen = 'detailDoors'
 
@@ -355,7 +358,7 @@ def handleClickDetailDoorsScreen(app, mouseX, mouseY):
     # top buttons
     if mouseY > 0 and mouseY < 50:
         if mouseX > 0 and mouseX < app.width/2:
-            app.screen = 'detailWindows'
+            navigateBack(app)
         elif mouseX > app.width/2:
             app.screen = 'detailFloor'
 
@@ -363,7 +366,7 @@ def handleClickDetailFloorScreen(app, mouseX, mouseY):
     # top buttons
     if mouseY > 0 and mouseY < 50:
         if mouseX > 0 and mouseX < app.width/2:
-            app.screen = 'detailDoors'
+            navigateBack(app)
         elif mouseX > app.width/2:
             app.screen = 'detailRoof'
 
@@ -371,7 +374,7 @@ def handleClickDetailRoofScreen(app, mouseX, mouseY):
     # top buttons
     if mouseY > 0 and mouseY < 50:
         if mouseX > 0 and mouseX < app.width/2:
-            app.screen = 'detailFloor'
+            navigateBack(app)
         elif mouseX > app.width/2:
             app.screen = 'detail'
 
@@ -379,22 +382,16 @@ def handleClickDetailRoofScreen(app, mouseX, mouseY):
 def handleClickCalculateScreen(app, mouseX, mouseY):
     # bottom buttons
     if mouseY > app.height-50:
-        if mouseX > 0 and mouseX < app.width/3:
+        if mouseX > 0 and mouseX < app.width/4:
             reset(app)
-        elif mouseX > app.width/3 and mouseX < 2*app.width/3:
-            app.building.save()
-        elif mouseX > 2*app.width/3:
-            app.showMessage(app.instruction)
-    
-    # bottom2 buttons
-    if mouseY > app.height-100:
-        if mouseX > 0 and mouseX < app.width/2:
-            app.screen = 'detail'
-        elif mouseX > app.width/2:
-            app.gallery.items.append(app.building)
-            reset(app)
+        elif mouseX > app.width/4 and mouseX < app.width/2:
             app.screen = 'home'
-
+        elif mouseX > app.width/2 and mouseX < 3*app.width/4:
+            navigateBack(app)
+        elif mouseX > 3*app.width/4:
+            app.building.save()
+            app.screen = 'home'
+            reset(app)
 
 def main():
     runApp(width=1000, height=1000)

@@ -1,4 +1,6 @@
-# unit conversion, area calculation, data validation/formatting, buttons etc.
+# Some helper functions and auxilary implementations, such as unit conversion,
+# data validation/formatting, Buttons, Gallery etc
+
 from cmu_graphics import *
 
 ########################################################
@@ -167,4 +169,12 @@ class Gallery:
         if app.cx != None and app.cy != None:
             return (app.cx > i*self.galleryStep and app.cx < (i+1)*self.galleryStep and
                         app.cy > self.top and app.cy < self.top + self.length)
-            
+    
+
+def navigateBack(app):
+    if len(app.pageHistory) > 1:
+        app.pageHistory.pop()
+        app.screen = app.pageHistory[-1]
+
+def navigateForward(app):
+    pass

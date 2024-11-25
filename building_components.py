@@ -54,13 +54,15 @@ class Building:
 
     
     def __repr__(self):
-        return f'{self.name} at {self.location} with dimensions {self.length}x{self.width}x{self.height}cm'
+        return f'{self.name} in {self.location} with dimensions {self.length}x{self.width}x{self.height}cm'
     
     def save(self):
-        app.gallery.items.append(app.building)
-        app.showMessage(f'{app.building.name} at {app.building.location} with dimensions ' + 
-                        f'{app.building.length}x{app.building.width}x{app.building.height} cm is saved to gallery!')
-        print(app.gallery.items)
+        if app.building in app.gallery.items:
+                app.showMessage(f'{self.name} is already saved in gallery!')
+        else:
+            app.gallery.items.append(app.building)
+            app.showMessage(f'{app.building.name} at {app.building.location} with dimensions ' + 
+                            f'{app.building.length}x{app.building.width}x{app.building.height} cm is saved to gallery!')
         
 class BuildingComponent:
     def __init__(self, length, height, uValue): 
