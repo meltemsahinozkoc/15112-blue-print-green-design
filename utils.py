@@ -6,8 +6,8 @@ from cmu_graphics import *
 ########################################################
 
 def isValidDimension(app, dimension):
-    if not dimension.isdigit() or dimension == None or int(dimension) < 100 or int(dimension) > 600:
-        app.showMessage('Invalid dimension. Please enter a value between 100-600.')
+    if not dimension.isdigit() or dimension == None or int(dimension) < 100 or int(dimension) > 500:
+        app.showMessage('Invalid dimension. Please enter a value between 100-500.')
         return False
     return True
 
@@ -91,17 +91,17 @@ class Button:
     def draw(self):
         for i in range(self.buttonNum):
             drawRect(i*self.buttonStep,self.top, self.buttonStep,
-                    self.buttonHeight , border = 'white', borderWidth=1, fill = 'white', opacity = 40)
+                    self.buttonHeight , border = 'white', borderWidth = 1, fill = 'white', opacity = 40)
             drawLabel(self.text[i], (i+0.5)*self.buttonStep, self.top + self.buttonHeight/2,
                         font = 'monospace', fill='white', bold = True, size = 16)
-            
-    def mouseOver(self, mouseX, mouseY):
-        for i in range(self.buttonNum):
-            if mouseX > i*self.buttonStep and mouseX < (i+1)*self.buttonStep:
-                if mouseY > self.top and mouseY < self.top + self.buttonHeight:
-                    return True
-        return False
         
+    def mouseOver(self,i):
+        if app.cx != None and app.cy != None:
+            if (app.cx > i*self.buttonStep and app.cx < (i+1)*self.buttonStep and
+                        app.cy > self.top and app.cy < self.top + self.buttonHeight):
+                app.mouseOverButton = True
+                return True
+        return False
 
 class Icon:
     def __init__(self, r, origin, name=None, lineColor='white', lineWidth=1):
@@ -137,18 +137,34 @@ class Icon:
 class Gallery:
     def __init__(self):
         self.items = []
-        self.projectCount = len(self.items)
+        self.projectCount = len(self.items) # num
+        if self.projectCount == 0:
+            self.galleryStep = 0
+        else:
+            self.galleryStep = (app.width-50)/self.projectCount # step
+        self.padding = 50
+        self.width = 200
+        self.length = 200
+        self.top = 700
     
-    def draw(self): # revise
+    def draw(self):
+        print(self.projectCount)
         for i in range(self.projectCount):
-            drawRect(i*(app.width/self.projectCount), 700, 50, 50, fill = 'None', border = 'white', borderWidth = 1)
+            drawRect(i*(self.galleryStep) + self.padding, self.top, self.width, self.length, fill = None, border = 'white', borderWidth = 1)
             
             currBuilding = self.items[i]
             newBuilding = currBuilding.createScaledBuildingIcon()
-            drawRect(i*app.width/self.projectCount, 700, newBuilding.width, newBuilding.length, fill = 'None', border = 'white', borderWidth = 3)
 
-            drawLabel(currBuilding.name, i*app.width/self.projectCount, 650, fill = 'white', bold = True, size = 16)
-            drawLabel(currBuilding.location, i*app.width/self.projectCount, 675, fill = 'white', size = 12)
-            drawLabel(f'{currBuilding.length}x{currBuilding.width}x{currBuilding.height}cm', i*app.width/self.projectCount, 700, fill = 'white', size = 12)
+            center = (i*self.galleryStep + self.padding + self.width/2, self.top + self.length/2)
+            newBuilding.drawToPlace(center)
             
-            drawLabel(f'{currBuilding.annualHeatLoss:.2f} MMBTU', i*app.width/self.projectCount, 725, fill = 'white', size = 12)
+            cx, cy = center
+            drawLabel(currBuilding.name, cx, cy+120, fill = 'white', bold = True, size = 16)
+            drawLabel(currBuilding.location, cx, cy+140, fill = 'white', size = 12)
+            drawLabel(f'{currBuilding.annualHeatLoss} MMBTU', cx, cy+155, fill = 'white', size = 12)
+    
+    def mouseOver(self,i):
+        if app.cx != None and app.cy != None:
+            return (app.cx > i*self.galleryStep and app.cx < (i+1)*self.galleryStep and
+                        app.cy > self.top and app.cy < self.top + self.length)
+            

@@ -12,6 +12,8 @@ from utils import *
 def onAppStart(app):
     initializeHomeScreen(app)
     app.gallery = Gallery()
+    app.textSize = 16
+    buttonsTop2 = Button(50, 2, app.width/2, 50,['+ADD WINDOW', '+ADD DOOR'])
 
     reset(app)
 
@@ -20,10 +22,14 @@ def reset(app):
     # mouse position
     app.cx = None 
     app.cy = None
+    # app.hx = None
+    # app.hy = None
+    # app.mouseOverButton = False
 
 def initilaizeBuilding(app):
     stdWallHeight = 6.5
     app.building = Building(200,200,stdWallHeight) # bad!!!! - default values
+    # app.gallery.items.append(app.building)
     
     app.windows = []
     app.walls = []
@@ -64,9 +70,8 @@ def redrawAll(app):
     drawBg(app)
     if app.screen == 'home':
         draw0HomeScreen(app)
-        if app.gallery.projectCount != 0:
-            app.gallery.draw()
-            print('Drawing gallery')
+        print('drawing gallery')
+        app.gallery.draw()
     elif app.screen == 'draw':
         draw1DrawScreen(app)
         if app.building != None:
@@ -127,6 +132,10 @@ def onKeyPress(app, key):
         elif key == 'r':
             app.screen = 'detailRoof'
 
+def onMousemove(app, mouseX, mouseY):
+    app.hx = mouseX
+    app.hy = mouseY
+
 
 def onMousePress(app, mouseX, mouseY):
     app.cx = mouseX
@@ -150,7 +159,7 @@ def onMousePress(app, mouseX, mouseY):
         handleClickDetailFloorScreen(app, mouseX, mouseY)
     elif app.screen == 'detailRoof':
         handleClickDetailRoofScreen(app, mouseX, mouseY)
-    
+
 def handleClickHomeScreen(app, mouseX, mouseY):
     if mouseY > app.height/2 and mouseY < app.height/2 + 50:
             if mouseX > 0 and mouseX < app.width/3 :
@@ -159,6 +168,13 @@ def handleClickHomeScreen(app, mouseX, mouseY):
                 app.screen = 'detail'
             elif mouseX > 2*app.width/3:
                 app.screen = 'calculate'
+
+    if mouseY > 700 and mouseY < 800:
+        for i in range(len(app.gallery.items)):
+            if mouseX > 50 + i*app.gallery.galleryStep and mouseX < 50 + (i+1)*app.gallery.galleryStep:
+                app.building = app.gallery.items[i]
+                app.screen = 'draw'
+            
 
 def handleClickDrawScreen(app, mouseX, mouseY):   
     # top buttons 
@@ -175,11 +191,11 @@ def handleClickDrawScreen(app, mouseX, mouseY):
                 app.building.height = int(inputHeight)
 
         elif mouseX > 3*app.width/4 and mouseX < app.width:
-            inputLength = app.getTextInput('Enter building length (Between 100-600): ')
+            inputLength = app.getTextInput('Enter building length (Between 100-500): ')
             if isValidDimension(app, inputLength):
                 app.building.length= int(inputLength)
 
-            inputWidth = app.getTextInput('Enter building width (Between 100-600): ')
+            inputWidth = app.getTextInput('Enter building width (Between 100-500): ')
             if isValidDimension(app, inputWidth):
                 app.building.width = int(inputWidth)
 
@@ -240,6 +256,42 @@ def handleClickDrawScreen(app, mouseX, mouseY):
             app.building.toggleView()
         elif mouseX > 2*app.width/3:
             app.showMessage(app.instruction) # or go to screen "home"?
+
+def classifyComponentAllignment(app): # vertical, horizontal, None
+    wallWidth = 15
+
+    halfLength = app.building.length/2
+    halfWidth = app.building.width/2
+
+    innerLeft = app.width/2 - halfWidth + wallWidth
+    innerRight = app.width/2 + halfWidth - wallWidth
+    innerTop = app.height/2 - halfLength + wallWidth
+    innerBottom = app.height/2 + halfLength - wallWidth
+
+    if app.cx < innerLeft or app.cx > innerRight: # vertical or horizontal allignment
+        return "vertical" 
+    elif app.cy < innerTop or app.cy > innerBottom:
+        return "horizontal" 
+    return None
+
+def isMouseClickOnTheWall(app): # T/F
+    wallWidth = 15
+
+    halfLength = app.building.length/2
+    halfWidth = app.building.width/2
+
+    outerLeft = app.width/2 - halfWidth
+    outerRight = app.width/2 + halfWidth
+    outerTop = app.height/2 - halfLength
+    outerBottom = app.height/2 + halfLength
+
+    innerLeft = app.width/2 - halfWidth + wallWidth
+    innerRight = app.width/2 + halfWidth - wallWidth
+    innerTop = app.height/2 - halfLength + wallWidth
+    innerBottom = app.height/2 + halfLength - wallWidth
+
+    return ((outerLeft <= app.cx <= outerRight and outerTop <= app.cy <= outerBottom) and 
+        not (innerLeft <= app.cx <= innerRight and innerTop <= app.cy <= innerBottom))
 
 
 def handleClickDetailScreen(app, mouseX, mouseY):
@@ -329,44 +381,9 @@ def handleClickCalculateScreen(app, mouseX, mouseY):
         if mouseX > 0 and mouseX < app.width/2:
             app.screen = 'detail'
         elif mouseX > app.width/2:
+            app.gallery.items.append(app.building)
+            reset(app)
             app.screen = 'home'
-
-
-def classifyComponentAllignment(app): # vertical, horizontal, None
-    wallWidth = 15
-
-    halfLength = app.building.length/2
-    halfWidth = app.building.width/2
-
-    innerLeft = app.width/2 - halfWidth + wallWidth
-    innerRight = app.width/2 + halfWidth - wallWidth
-    innerTop = app.height/2 - halfLength + wallWidth
-    innerBottom = app.height/2 + halfLength - wallWidth
-
-    if app.cx < innerLeft or app.cx > innerRight: # vertical or horizontal allignment
-        return "vertical" 
-    elif app.cy < innerTop or app.cy > innerBottom:
-        return "horizontal" 
-    return None
-
-def isMouseClickOnTheWall(app): # T/F
-    wallWidth = 15
-
-    halfLength = app.building.length/2
-    halfWidth = app.building.width/2
-
-    outerLeft = app.width/2 - halfWidth
-    outerRight = app.width/2 + halfWidth
-    outerTop = app.height/2 - halfLength
-    outerBottom = app.height/2 + halfLength
-
-    innerLeft = app.width/2 - halfWidth + wallWidth
-    innerRight = app.width/2 + halfWidth - wallWidth
-    innerTop = app.height/2 - halfLength + wallWidth
-    innerBottom = app.height/2 + halfLength - wallWidth
-
-    return ((outerLeft <= app.cx <= outerRight and outerTop <= app.cy <= outerBottom) and 
-        not (innerLeft <= app.cx <= innerRight and innerTop <= app.cy <= innerBottom))
 
 
 def main():

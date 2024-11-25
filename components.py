@@ -8,23 +8,27 @@ class Building:
         self.width = width
         self.height = height
 
-        self.name = f'Project {(app.gallery.projectCount) + 1}'
+        self.name = f'Project {(len(app.gallery.items)) + 1}'
         self.location = 'Unknown Location'
-        self.annnualHeatLoss = 'N/A'
+        self.annualHeatLoss = 'Unknown'
 
     def drawBuilding(self):
         drawRect(app.width/2, app.height/2, self.width, self.length, fill = None, border = 'white', borderWidth = 15, align = 'center')
 
+    def drawToPlace(self, center):
+        cx, cy = center
+        drawRect(cx, cy, self.width, self.length, fill = None, border = 'white', borderWidth = 3, align = 'center')
+
     def createScaledBuildingIcon(self):
-        scaleFactor = 0.2
-        scaledLenght = self.lenght * scaleFactor
+        scaleFactor = 0.3
+        scaledLenght = self.length * scaleFactor
         scaledWidth = self.width * scaleFactor
         scaledHeight = self.height * scaleFactor
         return Building(scaledLenght, scaledWidth, scaledHeight)
     
     def drawMeasureLines(self):
-        paddingDist = 15
-        textDist = 25
+        paddingDist = 30
+        textDist = 40
         textSize = 12
         lineW = 1
         lineArrowDist = 5
@@ -88,10 +92,14 @@ class Window(BuildingComponent):
     def draw(self):
         if self.type == 'vertical':
             drawRect(self.cx, self.cy, 30, self.length, fill = app.fill, align = 'center')
+            drawLine(self.cx-2.5, self.cy - self.length/2, self.cx-2.5, self.cy + self.length/2, fill = 'white', lineWidth = 1)
             drawLine(self.cx, self.cy - self.length/2, self.cx, self.cy + self.length/2, fill = 'white', lineWidth = 1)
+            drawLine(self.cx+2.5, self.cy - self.length/2, self.cx+2.5, self.cy + self.length/2, fill = 'white', lineWidth = 1)
         elif self.type == 'horizontal':
             drawRect(self.cx, self.cy, self.length, 30, fill = app.fill, align = 'center')
+            drawLine(self.cx - self.length/2, self.cy-2.5, self.cx + self.length/2, self.cy-2.5, fill = 'white', lineWidth = 1)
             drawLine(self.cx - self.length/2, self.cy, self.cx + self.length/2, self.cy, fill = 'white', lineWidth = 1)
+            drawLine(self.cx - self.length/2, self.cy+2.5, self.cx + self.length/2, self.cy+2.5, fill = 'white', lineWidth = 1)
 
 class Door(BuildingComponent):
     def __init__(self, length, height, uValue, cx, cy):
@@ -105,7 +113,7 @@ class Door(BuildingComponent):
             drawRect(self.cx, self.cy, 30, self.length, fill = app.fill, align = 'center')
             drawLine(self.cx, self.cy - self.length/2, self.cx - self.length/2, self.cy - self.length/2 + self.length/2, fill = 'white', lineWidth = 1)
         elif self.type == 'horizontal':
-            drawRect(self.cx, app.cy, self.length, 30, fill = app.fill, align = 'center')
+            drawRect(self.cx, self.cy, self.length, 30, fill = app.fill, align = 'center')
             drawLine(self.cx - self.length/2, self.cy, self.cx - self.length/2 + self.length/2,self.cy - self.length/2, fill = 'white', lineWidth = 1)
 
 class Floor(BuildingComponent):
