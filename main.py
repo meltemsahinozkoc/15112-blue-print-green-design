@@ -12,10 +12,18 @@ from utils import *
 def onAppStart(app):
     initializeHomeScreen(app)
     app.gallery = Gallery()
+
+    app.textSizeHead = 24
     app.textSize = 16
-    buttonsTop2 = Button(50, 2, app.width/2, 50,['+ADD WINDOW', '+ADD DOOR'])
 
     reset(app)
+
+    app.currentComponent = None
+    app.thermalData = fetchFilteredThermalData()
+    app.materialRValueDict = dict()
+    for dictionary in app.thermalData:
+        app.materialRValueDict[dictionary['Material']] = float(dictionary['Conductivity (W/m·K)'])
+    print(app.materialRValueDict)
 
 def reset(app):
     initilaizeBuilding(app)
@@ -28,8 +36,7 @@ def reset(app):
 
 def initilaizeBuilding(app):
     stdWallHeight = 6.5
-    app.building = Building(200,200,stdWallHeight) # bad!!!! - default values
-    # app.gallery.items.append(app.building)
+    app.building = Building(200,200,stdWallHeight) # default building
     
     app.windows = []
     app.walls = []
@@ -70,7 +77,6 @@ def redrawAll(app):
     drawBg(app)
     if app.screen == 'home':
         draw0HomeScreen(app)
-        print('drawing gallery')
         app.gallery.draw()
     elif app.screen == 'draw':
         draw1DrawScreen(app)
@@ -150,6 +156,7 @@ def onMousePress(app, mouseX, mouseY):
         handleClickCalculateScreen(app, mouseX, mouseY)
 
     elif app.screen == 'detailWalls':
+        app.currentComponent = app.walls
         handleClickDetailWallsScreen(app, mouseX, mouseY)
     elif app.screen == 'detailWindows':
         handleClickDetailWindowsScreen(app, mouseX, mouseY)
@@ -174,7 +181,10 @@ def handleClickHomeScreen(app, mouseX, mouseY):
             if mouseX > 50 + i*app.gallery.galleryStep and mouseX < 50 + (i+1)*app.gallery.galleryStep:
                 app.building = app.gallery.items[i]
                 app.screen = 'draw'
-            
+    
+    if mouseY > app.height/1.6 and mouseY < app.height/1.6 + 50:
+            app.gallery.items = []
+
 
 def handleClickDrawScreen(app, mouseX, mouseY):   
     # top buttons 

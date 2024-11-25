@@ -67,12 +67,17 @@ class BuildingComponent:
         self.length = length
         self.height = height
         self.uValue = uValue
+        self.rValue = self.calculateRValue()
 
     def calculateArea(self):
         return self.length * self.width
 
     def calculateRValue(self):
-        return 1 / self.uValue
+        return None if self.uValue is None else 1 / self.uValue
+
+    def setMaterial(self, material):
+        self.uValue = float(material['Conductivity (BTU·ft/h·°F'])
+        self.rValue = self.calculateRValue()
     
 class Wall(BuildingComponent):
     def __init__(self, length, height, width, uValue):

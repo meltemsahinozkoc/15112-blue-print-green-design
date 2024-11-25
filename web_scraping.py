@@ -1,9 +1,4 @@
-########### API Call ##########
-# access token:
-# eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzE5NTgyMDksImV4cCI6MjA0NzMxODIwOSwidG9rZW5fdHlwZSI6ImRldmVsb3Blcl9hY2Nlc3MiLCJmaXJzdF9uYW1lIjoiTWVsdGVtIiwibGFzdF9uYW1lIjoiU2FoaW4gT3prb2MiLCJvY2N1cGF0aW9uIjoiU3R1ZGVudCIsInVzZXJfY29tcGFueSI6IkNNVSIsInVzZXJfZW1haWwiOiJtc2FoaW5vekBhbmRyZXcuY211LmVkdSJ9.nra6GVmWF2Wjt895AWcZjp35cmblbm7c7r0RNVHA0NM
-
 # web scraping from neutrium + heating degree day values.
-
 
 '''
 I structured the GET request to the website and checking validity (status code 200, 401, 404) myself. 
@@ -19,15 +14,16 @@ I know what the code is doing and I am confident that I can explain it (As I alr
 import requests
 from bs4 import BeautifulSoup
 
-def fetch_filtered_thermal_conductivity_data():
+def fetchFilteredThermalData():
     url = 'https://neutrium.net/heat-transfer/thermal-conductivity-of-common-materials/'
     response = requests.get(url)
     if response.status_code != 200:
         print(f"Failed to retrieve the webpage. Status code: {response.status_code}")
-        return
+        return {}
 
     # parse html
     soup = BeautifulSoup(response.content, 'html.parser')
+    data = {}
     
     table_container = soup.find('div', class_='articleTableContainerScrollFrame') # found via inspect
     if not table_container:
@@ -57,7 +53,7 @@ def fetch_filtered_thermal_conductivity_data():
             if len(cols) >= 5:
                 material = cols[0].get_text(strip=True)
                 temp_c = cols[1].get_text(strip=True)
-                conductivity_w_mk = cols[2].get_text(strip=True)
+                conductivity = cols[2].get_text(strip=True)
                 temp_f = cols[3].get_text(strip=True)
                 conductivity_btu_ft_h_f = cols[4].get_text(strip=True)
 
@@ -65,7 +61,7 @@ def fetch_filtered_thermal_conductivity_data():
                     'Category': current_subheader,
                     'Material': material,
                     'Temperature (°C)': temp_c,
-                    'Conductivity (W/m·K)': conductivity_w_mk,
+                    'Conductivity (W/m·K)': conductivity,
                     'Temperature (°F)': temp_f,
                     'Conductivity (BTU·ft/h·°F)': conductivity_btu_ft_h_f
                 })
@@ -73,12 +69,11 @@ def fetch_filtered_thermal_conductivity_data():
     return data
 
 
-thermal_data = fetch_filtered_thermal_conductivity_data()
-if thermal_data:
-    for entry in thermal_data:
-        print(f"Category: {entry['Category']}")
-        print(f"  Material: {entry['Material']}")
-        print(f"    Temperature (°C): {entry['Temperature (°C)']}")
-        print(f"    Conductivity (W/m·K): {entry['Conductivity (W/m·K)']}")
-        print(f"    Temperature (°F): {entry['Temperature (°F)']}")
-        print(f"    Conductivity (BTU·ft/h·°F): {entry['Conductivity (BTU·ft/h·°F)']}\n")
+thermalData = fetchFilteredThermalData()
+for entry in thermalData: # entry is a dictionary
+    print(f"Category: {entry['Category']}")
+    print(f"  Material: {entry['Material']}")
+    print(f"    Temperature (°C): {entry['Temperature (°C)']}")
+    print(f"    Conductivity (W/m·K): {entry['Conductivity (W/m·K)']}")
+    print(f"    Temperature (°F): {entry['Temperature (°F)']}")
+    print(f"    Conductivity (BTU·ft/h·°F): {entry['Conductivity (BTU·ft/h·°F)']}\n")

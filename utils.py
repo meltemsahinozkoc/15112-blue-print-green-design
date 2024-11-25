@@ -137,18 +137,17 @@ class Icon:
 class Gallery:
     def __init__(self):
         self.items = []
-        self.projectCount = len(self.items) # num
-        if self.projectCount == 0:
-            self.galleryStep = 0
-        else:
-            self.galleryStep = (app.width-50)/self.projectCount # step
         self.padding = 50
         self.width = 200
         self.length = 200
         self.top = 700
     
+    def updateProjectCount(self):
+        self.projectCount = len(self.items) # num
+        self.galleryStep = (app.width - self.padding*2) / self.projectCount if self.projectCount > 0 else 0 # step
+
     def draw(self):
-        print(self.projectCount)
+        self.updateProjectCount()
         for i in range(self.projectCount):
             drawRect(i*(self.galleryStep) + self.padding, self.top, self.width, self.length, fill = None, border = 'white', borderWidth = 1)
             
@@ -164,6 +163,7 @@ class Gallery:
             drawLabel(f'{currBuilding.annualHeatLoss} MMBTU', cx, cy+155, fill = 'white', size = 12)
     
     def mouseOver(self,i):
+        self.updateProjectCount()
         if app.cx != None and app.cy != None:
             return (app.cx > i*self.galleryStep and app.cx < (i+1)*self.galleryStep and
                         app.cy > self.top and app.cy < self.top + self.length)
