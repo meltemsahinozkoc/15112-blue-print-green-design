@@ -18,16 +18,15 @@ def onAppStart(app):
     app.textSize = 16
     app.textSizeSmall = 12
 
-    reset(app)
-
-
     app.currentComponent = None
     app.thermalData = fetchFilteredThermalData()
     app.materialRValueDict = dict()
     for dictionary in app.thermalData:
         app.materialRValueDict[dictionary['Material']] = float(dictionary['Conductivity (W/m·K)'])
+
+    reset(app)
+
     
-    app.dropDownMenu = dropDownMenu(app.thermalData, 50, 50, 200, 200, 200, 50)
 
 def reset(app):
     initilaizeBuilding(app)
@@ -35,8 +34,11 @@ def reset(app):
     # mouse position
     app.cx = None 
     app.cy = None
-
     app.pageHistory = []
+
+    dropdownWidth = 200
+    dropdownHeight = 200
+    app.dropdownMenu = dropdownMenu(app.thermalData, (app.width/2 + 150), (app.height/2 + 50), dropdownWidth, dropdownHeight, 200, 50)
     
 
 def initilaizeBuilding(app):
@@ -44,11 +46,12 @@ def initilaizeBuilding(app):
     app.building = Building(200,200,stdWallHeight) # default building
     app.heatingDegreeDay65 = None
     
-    app.windows = []
     app.walls = []
+    app.windows = []
     app.doors = []
     app.floors = []
     app.roofs = []
+
     app.rooms = []
 
     app.addWindow = False
@@ -56,6 +59,7 @@ def initilaizeBuilding(app):
     app.addRoom = False
     app.roomX = None
     app.roomY = None
+    
 
 def initializeHomeScreen(app):
     app.screen= 'home'
@@ -176,14 +180,19 @@ def onMousePress(app, mouseX, mouseY):
     elif app.screen == 'detailWalls':
         app.currentComponent = app.walls
         handleClickDetailWallsScreen(app, mouseX, mouseY)
+        app.dropdownMenu.handleClick(mouseX, mouseY)
     elif app.screen == 'detailWindows':
         handleClickDetailWindowsScreen(app, mouseX, mouseY)
+        app.dropdownMenu.handleClick(mouseX, mouseY)
     elif app.screen == 'detailDoors':
         handleClickDetailDoorsScreen(app, mouseX, mouseY)
+        app.dropdownMenu.handleClick(mouseX, mouseY)
     elif app.screen == 'detailFloor':
         handleClickDetailFloorScreen(app, mouseX, mouseY)
+        app.dropdownMenu.handleClick(mouseX, mouseY)
     elif app.screen == 'detailRoof':
         handleClickDetailRoofScreen(app, mouseX, mouseY)
+        app.dropdownMenu.handleClick(mouseX, mouseY)
 
 def handleClickHomeScreen(app, mouseX, mouseY):
     if mouseY > app.height/2 and mouseY < app.height/2 + 50:
@@ -238,19 +247,13 @@ def handleClickDrawScreen(app, mouseX, mouseY):
 
             stdWallWidth = 25
             stdWallUValue = 0.1
-            w0 = Wall(app.building.width, app.building.height, stdWallWidth, stdWallUValue,
-                      app.width/2-app.building.width/2, app.height/2-app.building.height/2) # top wall, left point
-            w1 = Wall(app.building.length, app.building.height, stdWallWidth, stdWallUValue,
-                      app.width/2+app.building.width/2, app.height/2-app.building.height/2) # right wall, top point
-            w2 = Wall(app.building.width, app.building.height, stdWallWidth, stdWallUValue,
-                      app.width/2-app.building.width/2, app.height/2+app.building.height/2) # bottom wall, left point
-            w3 = Wall(app.building.length, app.building.height, stdWallWidth, stdWallUValue,
-                      app.width/2-app.building.width/2, app.height/2-app.building.height/2) # left wall, top point
+            w0 = Wall(app.building.width, app.building.height, stdWallWidth, stdWallUValue, app.width/2-app.building.width/2, app.height/2-app.building.height/2) # top wall, left point
+            w1 = Wall(app.building.length, app.building.height, stdWallWidth, stdWallUValue, app.width/2+app.building.width/2, app.height/2-app.building.height/2) # right wall, top point
+            w2 = Wall(app.building.width, app.building.height, stdWallWidth, stdWallUValue, app.width/2-app.building.width/2, app.height/2+app.building.height/2) # bottom wall, left point
+            w3 = Wall(app.building.length, app.building.height, stdWallWidth, stdWallUValue, app.width/2-app.building.width/2, app.height/2-app.building.height/2) # left wall, top point
             app.walls = [w0,w1,w2,w3]
             
-            
-
-
+ 
     # +add window,door,room buttons
     if mouseY > 50 and mouseY < 100:
         if mouseX > 0 and mouseX < app.width/3:
@@ -261,11 +264,12 @@ def handleClickDrawScreen(app, mouseX, mouseY):
             app.addRoom = True     
     
     if isMouseClickOnTheWall(app):
+        snappedX, snappedY = snapToWall(app, mouseX, mouseY)
         if app.addWindow:
             stdWindowLenght = 40
             stdWindowHeight = 60
-            stdWindowUValue = 5
-            newWindow = Window(stdWindowLenght,stdWindowHeight,stdWindowUValue, mouseX, mouseY)
+            stdWindowUValue = 2
+            newWindow = Window(stdWindowLenght,stdWindowHeight,stdWindowUValue, snappedX, snappedY)
             app.windows.append(newWindow)
             newWindow.type = classifyComponentAllignment(app)
             app.addWindow = False
@@ -273,8 +277,8 @@ def handleClickDrawScreen(app, mouseX, mouseY):
         elif app.addDoor:
             stdDoorLength = 60
             stdDoorHeight = 180
-            stdDoorUValue = 1
-            newDoor = Door(stdDoorLength,stdDoorHeight,stdDoorUValue, mouseX, mouseY)
+            stdDoorUValue = 2
+            newDoor = Door(stdDoorLength,stdDoorHeight,stdDoorUValue, snappedX, snappedY)
             app.doors.append(newDoor)
             newDoor.type = classifyComponentAllignment(app)
             app.addDoor = False
@@ -283,10 +287,10 @@ def handleClickDrawScreen(app, mouseX, mouseY):
         if app.addRoom:
             if app.roomX == None: # first click - left-top
                 app.roomX, app.roomY = mouseX, mouseY
-                snapToWall(app)
+                app.roomX, app.roomY = snapToWall(app, app.roomX, app.roomY)
             elif app.roomX != None: # second click - right-bottom
-                roomWidth = mouseX - app.roomX
-                roomHeight = mouseY - app.roomY
+                roomWidth = abs(mouseX - app.roomX)
+                roomHeight = abs(mouseY - app.roomY)
 
                 inputRoomName = app.getTextInput('Enter room name: ')
                 roomName = f'Room {len(app.rooms) + 1}' if inputRoomName == '' else inputRoomName
@@ -300,7 +304,10 @@ def handleClickDrawScreen(app, mouseX, mouseY):
                     isHeated = False
                     app.showMessage('Invalid input. Room is not heated by default.')
 
-                newRoom = Room(app.roomX, app.roomY, roomWidth, roomHeight, roomName, isHeated)
+                left = min(app.roomX, mouseX)
+                top = min(app.roomY, mouseY)
+
+                newRoom = Room(left, top, roomWidth, roomHeight, roomName, isHeated)
                 app.rooms.append(newRoom)
 
                 app.roomX = None
@@ -352,22 +359,23 @@ def isMouseClickOnTheWall(app): # T/F
     return ((outerLeft <= app.cx <= outerRight and outerTop <= app.cy <= outerBottom) and 
         not (innerLeft <= app.cx <= innerRight and innerTop <= app.cy <= innerBottom))
 
-def snapToWall(app):
-    buildingLeft = app.width/2 - app.building.width/2
-    buildingTop = app.height/2 - app.building.length/2
-    buildingRight = app.width/2 + app.building.width/2
-    buildingBottom = app.height/2 + app.building.length/2
+def snapToWall(app, xCoor, yCoor):
+    buildingLeft = app.width/2 - app.building.width/2 + 15/2
+    buildingTop = app.height/2 - app.building.length/2 + 15/2
+    buildingRight = app.width/2 + app.building.width/2 - 15/2
+    buildingBottom = app.height/2 + app.building.length/2 - 15/2
 
     margin = 10
-    if abs(app.roomX - buildingLeft) < margin:
-        app.roomX = buildingLeft
-    elif abs(app.roomX - buildingRight) < margin:
-        app.roomX = buildingRight
+    if abs(xCoor - buildingLeft) < margin:
+        xCoor = buildingLeft
+    elif abs(xCoor - buildingRight) < margin:
+        xCoor = buildingRight
 
-    if abs(app.roomY - buildingTop) < margin:
-        app.roomY = buildingTop
-    elif abs(app.roomY - buildingBottom) < margin:
-        app.roomY = buildingBottom
+    if abs(yCoor - buildingTop) < margin:
+        yCoor = buildingTop
+    elif abs(yCoor - buildingBottom) < margin:
+        yCoor = buildingBottom
+    return xCoor, yCoor
 
 def isMouseClickNearWall(app):
     margin = 10
@@ -435,12 +443,9 @@ def handleClickDetailWallsScreen(app, mouseX, mouseY):
     # middle buttons
     if mouseY > app.height/2 and mouseY < app.height/2 + 50:
         if mouseX > 0 and mouseX < app.width/2:
-            app.building.uValue = app.getTextInput('Enter the U-Value of the wall: ')
+            app.building.wallsRValue = pythonRound(1/float(app.getTextInput('Enter the U-Value of the walls: ')),2)
         elif mouseX > app.width:
-            pass
-    
-    app.dropdownMenu.handleClick(mouseX, mouseY)
-            
+            pass            
 
 def handleClickDetailWindowsScreen(app, mouseX, mouseY):
     # top buttons
@@ -449,6 +454,13 @@ def handleClickDetailWindowsScreen(app, mouseX, mouseY):
             navigateBack(app)
         elif mouseX > app.width/2:
             app.screen = 'detailDoors'
+    
+    # middle buttons
+    if mouseY > app.height/2 and mouseY < app.height/2 + 50:
+        if mouseX > 0 and mouseX < app.width/2:
+            app.building.windowsRValue = pythonRound(1/float(app.getTextInput('Enter the U-Value of the windows: ')),2)
+        elif mouseX > app.width:
+            pass     
 
 def handleClickDetailDoorsScreen(app, mouseX, mouseY):
     # top buttons
@@ -458,6 +470,13 @@ def handleClickDetailDoorsScreen(app, mouseX, mouseY):
         elif mouseX > app.width/2:
             app.screen = 'detailFloor'
 
+    # middle buttons
+    if mouseY > app.height/2 and mouseY < app.height/2 + 50:
+        if mouseX > 0 and mouseX < app.width/2:
+            app.building.doorsRValue = pythonRound(1/float(app.getTextInput('Enter the U-Value of the doors: ')),2)
+        elif mouseX > app.width:
+            pass     
+
 def handleClickDetailFloorScreen(app, mouseX, mouseY):
     # top buttons
     if mouseY > 0 and mouseY < 50:
@@ -465,6 +484,13 @@ def handleClickDetailFloorScreen(app, mouseX, mouseY):
             navigateBack(app)
         elif mouseX > app.width/2:
             app.screen = 'detailRoof'
+    
+    # middle buttons
+    if mouseY > app.height/2 and mouseY < app.height/2 + 50:
+        if mouseX > 0 and mouseX < app.width/2:
+            app.building.floorsRValue = pythonRound(1/float(app.getTextInput('Enter the U-Value of the floors: ')),2)
+        elif mouseX > app.width:
+            pass     
 
 def handleClickDetailRoofScreen(app, mouseX, mouseY):
     # top buttons
@@ -472,7 +498,14 @@ def handleClickDetailRoofScreen(app, mouseX, mouseY):
         if mouseX > 0 and mouseX < app.width/2:
             navigateBack(app)
         elif mouseX > app.width/2:
-            app.screen = 'detail'
+            app.screen = 'calculate'
+
+    # middle buttons
+    if mouseY > app.height/2 and mouseY < app.height/2 + 50:
+        if mouseX > 0 and mouseX < app.width/2:
+            app.building.roofsRValue = pythonRound(1/float(app.getTextInput('Enter the U-Value of the roofs: ')),2)
+        elif mouseX > app.width:
+            pass     
 
 
 def handleClickCalculateScreen(app, mouseX, mouseY):

@@ -31,7 +31,7 @@ def castCmToMeter(app, dimension):
 ################ HEAT LOSS CALCULATIONS ################
 ########################################################
 
-def calculateSharedWallArea(room, otherRoom):
+def calculateSharedWallArea(room, otherRoom): # WRONG!
         sharedWallArea = 0
         for wall in room.walls:
             if wall in otherRoom.walls:
@@ -65,37 +65,6 @@ class Button:
                 app.mouseOverButton = True
                 return True
         return False
-
-class Icon:
-    def __init__(self, r, origin, name=None, lineColor='white', lineWidth=1):
-        self.r = r
-        self.origin = origin
-        self.name = name
-        self.lineColor = lineColor
-        self.lineWidth = lineWidth
-    
-    def draw(self, app):
-        lineColor, fillColor = 'white'
-        cx, cy = self.origin
-        r = self.r
-        if self.name == 'Forward Arrow':
-            drawLabel(cx,cy-r, text='→', fill=lineColor, 
-                                        font=app.font)
-            drawLabel(cx,cy+r, text='F', fill=lineColor, 
-                                        font=app.font)
-        elif self.name == 'Backward Arrow':
-            drawLabel(cx,cy-r, text='←', fill=lineColor, 
-                                        font=app.font)
-            drawLabel(cx,cy+r, text='B', fill=lineColor, 
-                                        font=app.font)
-        
-        elif self.name == 'Help':
-            drawLabel(cx,cy, text='?', fill=lineColor, 
-                                        font=app.font)
-            drawCircle(cx,cy,r, fill=fillColor, border=lineColor, borderWidth=self.lineWidth)
-        elif self.name == 'Save':
-            pass
-
 
 class Gallery:
     def __init__(self):
@@ -141,7 +110,7 @@ def navigateForward(app):
     pass
 
 
-class dropDownMenu:
+class dropdownMenu:
     def __init__(self, items, x, y, width, height, buttonWidth, buttonHeight):
         self.items = items
         self.x = x
@@ -158,17 +127,86 @@ class dropDownMenu:
         currPageItems = self.items[self.currStartIdx:self.currStartIdx+self.elementsPerPage]
         for i in range(len(currPageItems)):
             item = currPageItems[i]
-            drawRect(self.x, self.y + i*self.buttonHeight, self.buttonWidth, self.buttonHeight, fill='white', border='black', borderWidth=1)
-            drawLabel(item['Material'], self.x + self.buttonWidth/2, self.y + i*self.buttonHeight + self.buttonHeight/2, fill='black', size=app.textSizeSmall, font=app.font, align='center', bold = True)
+            drawRect(self.x, self.y + i*self.buttonHeight, self.buttonWidth, self.buttonHeight, fill='white', border='white', borderWidth=1, opacity = 20)
+            drawLabel(item['Material'], self.x + self.buttonWidth/2, self.y + i*self.buttonHeight + self.buttonHeight/2, fill='white', size=app.textSizeSmall, font=app.font, align='center', bold = True)
         
         # navi buttons
-        drawRect(self.x, self.y + self.buttonHeight, self.buttonWidth, self.buttonHeight, fill='white', border='black', borderWidth=1)
-        drawLabel('⬆ UP', self.x + self.width, self.y + self.height, fill='black', size=app.textSizeSmall, font=app.font, align='center', bold = True)
-        drawRect(self.x, self.y + self.height + 10, self.buttonWidth, self.buttonHeight, fill='white', border='black', borderWidth=1)
-        drawLabel('⬇ DOWN', self.x + self.width/2, self.y + self.height + 15, fill='black', size=app.textSizeSmall, font=app.font, align='center', bold = True)
+        buttonSize = self.buttonHeight
+        drawRect(self.x + self.width, self.y, buttonSize, buttonSize, fill='white', border='white', borderWidth=1, opacity = 20)
+        drawLabel('↑', self.x + self.width + buttonSize/2, self.y + buttonSize/2, fill='white', size=app.textSizeHead, align='center', bold = True)
+        drawRect(self.x + self.width, self.y + buttonSize, buttonSize, buttonSize, fill='white', border='white', borderWidth=1, opacity = 20)
+        drawLabel('↓', self.x + self.width + buttonSize/2, self.y + buttonSize + buttonSize/2, fill='white', size=app.textSizeHead, align='center', bold = True)
 
     
     def handleClick(self, mouseX, mouseY):
-        #implement
-        pass
+        if mouseX > self.x + self.width and mouseX < self.x + self.width + self.buttonWidth:
+            if mouseY > self.y and mouseY < self.y + self.buttonHeight:
+                if self.currStartIdx > 0:
+                    self.currStartIdx -= 1
+            elif mouseY > self.y + self.buttonHeight and mouseY < self.y + self.buttonHeight*2:
+                if self.currStartIdx < len(self.items) - self.elementsPerPage:
+                    self.currStartIdx += 1
 
+        if mouseX > self.x and mouseX < self.x + self.buttonWidth:
+            for i in range(len(self.items)):
+                if mouseY > self.y + i*self.buttonHeight and mouseY < self.y + (i+1)*self.buttonHeight:
+                    itemRValue = pythonRound(1/(float(self.items[i]['Conductivity (W/m·K)'])), 2) # isDigit?
+                    if app.screen == 'detailWalls':
+                        app.building.wallsRValue.append(itemRValue) # append the selected item consuctivity
+                    elif app.screen == 'detailWindows':
+                        app.building.windowsRValue.append(itemRValue)
+                    elif app.screen == 'detailDoors':
+                        app.building.doorsRValue.append(itemRValue)
+                    elif app.screen == 'detailFloor':
+                        app.building.floorsRValue.append(itemRValue)
+                    elif app.screen == 'detailRoof':
+                        app.building.roofsRValue.append(itemRValue)
+
+class TableCol:
+    def __init__(self, items, x, y, width, height, rowWidth, rowHeight):
+        self.items = items
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.rowWidth = rowWidth
+        self.rowHeight = rowHeight
+
+        self.currStartIdx = 0
+        self.elementsPerPage = 8
+
+    def draw(self):
+        for i in range(len(self.items)):
+            item = self.items[i]
+            drawRect(self.x, self.y + i*self.rowHeight, self.rowWidth, self.rowHeight, fill=None, border='white', borderWidth=1)
+            drawLabel(item, self.x + self.rowWidth/2, self.y + i*self.rowHeight + self.rowHeight/2, fill='white', size=app.textSize, font=app.font, align='center', bold = True)
+
+# class Icon:
+#     def __init__(self, r, origin, name=None, lineColor='white', lineWidth=1):
+#         self.r = r
+#         self.origin = origin
+#         self.name = name
+#         self.lineColor = lineColor
+#         self.lineWidth = lineWidth
+    
+#     def draw(self, app):
+#         lineColor, fillColor = 'white'
+#         cx, cy = self.origin
+#         r = self.r
+#         if self.name == 'Forward Arrow':
+#             drawLabel(cx,cy-r, text='→', fill=lineColor, 
+#                                         font=app.font)
+#             drawLabel(cx,cy+r, text='F', fill=lineColor, 
+#                                         font=app.font)
+#         elif self.name == 'Backward Arrow':
+#             drawLabel(cx,cy-r, text='←', fill=lineColor, 
+#                                         font=app.font)
+#             drawLabel(cx,cy+r, text='B', fill=lineColor, 
+#                                         font=app.font)
+        
+#         elif self.name == 'Help':
+#             drawLabel(cx,cy, text='?', fill=lineColor, 
+#                                         font=app.font)
+#             drawCircle(cx,cy,r, fill=fillColor, border=lineColor, borderWidth=self.lineWidth)
+#         elif self.name == 'Save':
+#             pass
