@@ -121,7 +121,7 @@ class dropdownMenu:
         self.buttonHeight = buttonHeight
 
         self.currStartIdx = 0
-        self.elementsPerPage = 8
+        self.elementsPerPage = 6
 
     def draw(self):
         currPageItems = self.items[self.currStartIdx:self.currStartIdx+self.elementsPerPage]
@@ -148,19 +148,30 @@ class dropdownMenu:
                     self.currStartIdx += 1
 
         if mouseX > self.x and mouseX < self.x + self.buttonWidth:
-            for i in range(len(self.items)):
+            currPageItems = self.items[self.currStartIdx:self.currStartIdx+self.elementsPerPage]
+            for i in range(len(currPageItems)):
                 if mouseY > self.y + i*self.buttonHeight and mouseY < self.y + (i+1)*self.buttonHeight:
-                    itemRValue = pythonRound(1/(float(self.items[i]['Conductivity (W/m·K)'])), 2) # isDigit?
+                    itemRValue = pythonRound(1/(float(currPageItems[i]['Conductivity (W/m·K)'])), 2) # isDigit?
                     if app.screen == 'detailWalls':
-                        app.building.wallsRValue.append(itemRValue) # append the selected item consuctivity
+                        if isinstance(app.building.wallsRValue, list):
+                            app.building.wallsLayers.append(currPageItems[i]['Material'])
+                            app.building.wallsRValue.append(itemRValue) # append the selected item conductivity
                     elif app.screen == 'detailWindows':
-                        app.building.windowsRValue.append(itemRValue)
+                        if isinstance(app.building.windowsRValue, list):
+                            app.building.windowsLayers.append(currPageItems[i]['Material'])
+                            app.building.windowsRValue.append(itemRValue)
                     elif app.screen == 'detailDoors':
-                        app.building.doorsRValue.append(itemRValue)
+                        if isinstance(app.building.doorsRValue, list):
+                            app.building.doorsLayers.append(currPageItems[i]['Material'])
+                            app.building.doorsRValue.append(itemRValue)
                     elif app.screen == 'detailFloor':
-                        app.building.floorsRValue.append(itemRValue)
+                        if isinstance(app.building.floorsRValue, list):
+                            app.building.floorsLayers.append(currPageItems[i]['Material'])
+                            app.building.floorsRValue.append(itemRValue)
                     elif app.screen == 'detailRoof':
-                        app.building.roofsRValue.append(itemRValue)
+                        if isinstance(app.building.roofsRValue, list):
+                            app.building.roofsLayers.append(currPageItems[i]['Material'])
+                            app.building.roofsRValue.append(itemRValue)
 
 class TableCol:
     def __init__(self, items, x, y, width, height, rowWidth, rowHeight):

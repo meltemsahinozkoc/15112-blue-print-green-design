@@ -26,7 +26,6 @@ def onAppStart(app):
 
     reset(app)
 
-    
 
 def reset(app):
     initilaizeBuilding(app)
@@ -44,7 +43,7 @@ def reset(app):
 def initilaizeBuilding(app):
     stdWallHeight = 250
     app.building = Building(200,200,stdWallHeight) # default building
-    app.heatingDegreeDay65 = None
+    app.heatingDegreeDays65F = 5340 # default HDD
     
     app.walls = []
     app.windows = []
@@ -230,7 +229,7 @@ def handleClickDrawScreen(app, mouseX, mouseY):
             if inputHDD != '' and inputHDD.isdigit():
                 app.heatingDegreeDay65 = int(inputHDD)
             else:
-                app.showMessage('Invalid input. Try again with digits.')
+                app.showMessage('Invalid input. Try again with digits or the default value will be used.')
             
         elif mouseX > 3*app.width/5 and mouseX < 4*app.width/5:
             inputHeight = app.getTextInput('Enter building height (Between 6-35): ')
@@ -252,6 +251,16 @@ def handleClickDrawScreen(app, mouseX, mouseY):
             w2 = Wall(app.building.width, app.building.height, stdWallWidth, stdWallUValue, app.width/2-app.building.width/2, app.height/2+app.building.height/2) # bottom wall, left point
             w3 = Wall(app.building.length, app.building.height, stdWallWidth, stdWallUValue, app.width/2-app.building.width/2, app.height/2-app.building.height/2) # left wall, top point
             app.walls = [w0,w1,w2,w3]
+
+            stdFloorHeigth = 15 # thickness
+            stdFloorUValue = 0.1
+
+            stdRoofHeigth = 20
+            stdRoofUValue = 0.1
+            floor = Floor(app.building.lenght, stdFloorHeigth, app.building.width, stdFloorUValue)
+            roof = Roof(app.building.lenght, stdRoofHeigth, app.building.width, stdRoofUValue)
+            app.floors = [floor]
+            app.roofs = [roof]
             
  
     # +add window,door,room buttons
@@ -336,7 +345,9 @@ def handleClickDrawScreen(app, mouseX, mouseY):
         if mouseX > 0 and mouseX < app.width/3:
             reset(app)
         elif mouseX > app.width/3 and mouseX < 2*app.width/3:
-            app.building.toggleView()
+            app.building.save()
+            app.screen = 'home'
+            reset(app)
         elif mouseX > 2*app.width/3:
             app.screen = 'home' # or go to screen "home"?
 
@@ -404,9 +415,6 @@ def classifyComponentAllignment(app): # vertical, horizontal, None
         return "horizontal" 
     return None
 
-
-
-
 def handleClickDetailScreen(app, mouseX, mouseY):
     # middle component buttons
     if mouseY > app.height/2 and mouseY < app.height/2 + 50:
@@ -435,77 +443,112 @@ def handleClickDetailScreen(app, mouseX, mouseY):
 def handleClickDetailWallsScreen(app, mouseX, mouseY):
     # top buttons
     if mouseY > 0 and mouseY < 50:
-        if mouseX > 0 and mouseX < app.width/2:
+        if mouseX > 0 and mouseX < app.width/4:
             navigateBack(app)
-        elif mouseX > app.width/2:
+        elif mouseX > app.width/4 and mouseX < app.width/2:
+            app.building.wallsLayers = []
+            app.building.wallsRValue = []
+        elif mouseX > app.width/2 and mouseX < 3*app.width/4:
+            app.building.wallsLayers.pop()
+            app.building.wallsRValue.pop()
+        elif mouseX > 3*app.width/4:
             app.screen = 'detailWindows'
 
     # middle buttons
     if mouseY > app.height/2 and mouseY < app.height/2 + 50:
         if mouseX > 0 and mouseX < app.width/2:
             app.building.wallsRValue = pythonRound(1/float(app.getTextInput('Enter the U-Value of the walls: ')),2)
+            app.building.calculateTotalHeatLossCoefficient()
         elif mouseX > app.width:
-            pass            
+            app.building.calculateTotalHeatLossCoefficient()        
 
 def handleClickDetailWindowsScreen(app, mouseX, mouseY):
-    # top buttons
+    # top buttons   
     if mouseY > 0 and mouseY < 50:
-        if mouseX > 0 and mouseX < app.width/2:
+        if mouseX > 0 and mouseX < app.width/4:
             navigateBack(app)
-        elif mouseX > app.width/2:
+        elif mouseX > app.width/4 and mouseX < app.width/2:
+            app.building.windowsLayers = []
+            app.building.windowsRValue = []
+        elif mouseX > app.width/2 and mouseX < 3*app.width/4:
+            app.building.windowsLayers.pop()
+            app.building.windowsRValue.pop()
+        elif mouseX > 3*app.width/4:
             app.screen = 'detailDoors'
     
     # middle buttons
     if mouseY > app.height/2 and mouseY < app.height/2 + 50:
         if mouseX > 0 and mouseX < app.width/2:
             app.building.windowsRValue = pythonRound(1/float(app.getTextInput('Enter the U-Value of the windows: ')),2)
+            app.building.calculateTotalHeatLossCoefficient()
         elif mouseX > app.width:
-            pass     
+            app.building.calculateTotalHeatLossCoefficient()     
 
 def handleClickDetailDoorsScreen(app, mouseX, mouseY):
     # top buttons
     if mouseY > 0 and mouseY < 50:
-        if mouseX > 0 and mouseX < app.width/2:
+        if mouseX > 0 and mouseX < app.width/4:
             navigateBack(app)
-        elif mouseX > app.width/2:
+        elif mouseX > app.width/4 and mouseX < app.width/2:
+            app.building.doorsLayers = []
+            app.building.doorsRValue = []
+        elif mouseX > app.width/2 and mouseX < 3*app.width/4:
+            app.building.doorsLayers.pop()
+            app.building.doorsRValue.pop()
+        elif mouseX > 3*app.width/4:
             app.screen = 'detailFloor'
 
     # middle buttons
     if mouseY > app.height/2 and mouseY < app.height/2 + 50:
         if mouseX > 0 and mouseX < app.width/2:
             app.building.doorsRValue = pythonRound(1/float(app.getTextInput('Enter the U-Value of the doors: ')),2)
+            app.building.calculateTotalHeatLossCoefficient()
         elif mouseX > app.width:
-            pass     
+            app.building.calculateTotalHeatLossCoefficient()     
 
 def handleClickDetailFloorScreen(app, mouseX, mouseY):
     # top buttons
     if mouseY > 0 and mouseY < 50:
-        if mouseX > 0 and mouseX < app.width/2:
+        if mouseX > 0 and mouseX < app.width/4:
             navigateBack(app)
-        elif mouseX > app.width/2:
+        elif mouseX > app.width/4 and mouseX < app.width/2:
+            app.building.floorsLayers = []
+            app.building.floorsRValue = []
+        elif mouseX > app.width/2 and mouseX < 3*app.width/4:
+            app.building.floorsLayers.pop()
+            app.building.floorsRValue.pop()
+        elif mouseX > 3*app.width/4:
             app.screen = 'detailRoof'
     
     # middle buttons
     if mouseY > app.height/2 and mouseY < app.height/2 + 50:
         if mouseX > 0 and mouseX < app.width/2:
             app.building.floorsRValue = pythonRound(1/float(app.getTextInput('Enter the U-Value of the floors: ')),2)
+            app.building.calculateTotalHeatLossCoefficient()
         elif mouseX > app.width:
-            pass     
+            app.building.calculateTotalHeatLossCoefficient()     
 
 def handleClickDetailRoofScreen(app, mouseX, mouseY):
     # top buttons
     if mouseY > 0 and mouseY < 50:
-        if mouseX > 0 and mouseX < app.width/2:
+        if mouseX > 0 and mouseX < app.width/4:
             navigateBack(app)
-        elif mouseX > app.width/2:
+        elif mouseX > app.width/4 and mouseX < app.width/2:
+            app.building.roofsLayers = []
+            app.building.roofsRValue = []
+        elif mouseX > app.width/2 and mouseX < 3*app.width/4:
+            app.building.roofsLayers.pop()
+            app.building.roofsRValue.pop()
+        elif mouseX > 3*app.width/4:
             app.screen = 'calculate'
 
     # middle buttons
     if mouseY > app.height/2 and mouseY < app.height/2 + 50:
         if mouseX > 0 and mouseX < app.width/2:
             app.building.roofsRValue = pythonRound(1/float(app.getTextInput('Enter the U-Value of the roofs: ')),2)
+            app.building.calculateTotalHeatLossCoefficient()
         elif mouseX > app.width:
-            pass     
+            app.building.calculateTotalHeatLossCoefficient()     
 
 
 def handleClickCalculateScreen(app, mouseX, mouseY):
@@ -516,7 +559,7 @@ def handleClickCalculateScreen(app, mouseX, mouseY):
         elif mouseX > app.width/4 and mouseX < app.width/2:
             app.screen = 'home'
         elif mouseX > app.width/2 and mouseX < 3*app.width/4:
-            navigateBack(app)
+            app.screen = 'detail'
         elif mouseX > 3*app.width/4:
             app.building.save()
             app.screen = 'home'

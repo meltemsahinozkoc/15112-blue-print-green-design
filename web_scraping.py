@@ -9,8 +9,6 @@ Then I applied the 5-mins rule and wrote the code snippets myself. I also indica
 I know what the code is doing and I am confident that I can explain it (As I already explained in TP0 tech demo!).
 '''
 
-
-
 def fetchFilteredThermalData():
     url = 'https://neutrium.net/heat-transfer/thermal-conductivity-of-common-materials/'
     response = requests.get(url)
@@ -66,9 +64,6 @@ def fetchFilteredThermalData():
                     'Conductivity (BTU·ft/h·°F)': conductivity_btu_ft_h_f
                 })
     return data
-
-
-
 ############################################################
 # LLM ASSISTANCE ENDS HERE
 ############################################################ 

@@ -25,6 +25,12 @@ class Building:
         self.floorsRValue = []
         self.roofsRValue = []
 
+        self.wallsLayers = []
+        self.windowsLayers = []
+        self.doorsLayers = []
+        self.floorsLayers = []
+        self.roofsLayers = []
+
         self.totalWindowUA = 0
         self.totalDoorUA = 0
         self.totalWallUA = 0
@@ -137,27 +143,40 @@ class Building:
                         self.totalSharedWallArea += sharedWallArea
         
         # U-value calculation
-        if isinstance(self.wallsRValue, list):
+        if isinstance(self.wallsRValue, list) and sum(self.wallsRValue) != 0:
             wallsUValue = 1/sum(self.wallsRValue)
-        else:
+        elif not isinstance(self.wallsRValue, list):
             wallsUValue = 1/self.wallsRValue
+        else:
+            wallsUValue = 0.2 # dafault value
         
         if isinstance(self.windowsRValue, list) and len(self.windowsRValue) != 0:
             windowsUValue = 1/sum(self.windowsRValue)
-        else: windowsUValue = 1/self.windowsRValue
+        elif not isinstance(self.windowsRValue, list) and self.windowsRValue != 0:
+            windowsUValue = 1/self.windowsRValue
+        else:
+            windowsUValue = 0.2
 
         if isinstance(self.doorsRValue, list) and len(self.doorsRValue) != 0:
             doorsUValue = 1/sum(self.doorsRValue)
-        else: UoorsuValue = 1/self.doorsRValue
+        elif not isinstance(self.doorsRValue, list) and self.doorsRValue != 0:
+            doorsUValue = 1/self.doorsRValue
+        else:
+            doorsUValue = 0.2
 
         if isinstance(self.floorsRValue, list) and len(self.floorsRValue) != 0:
             floorsUValue = 1/sum(self.floorsRValue)
-        else: floorsUValue = 1/self.floorsRValue
+        elif not isinstance(self.floorsRValue, list) and self.floorsRValue != 0:
+            floorsUValue = 1/self.floorsRValue
+        else:
+            floorsUValue = 0.2
 
         if isinstance(self.roofsRValue, list) and len(self.roofsRValue) != 0:
             roofsUValue = 1/sum(self.roofsRValue)
-        else: roofsUValue = 1/self.roofsRValue
-
+        elif not isinstance(self.roofsRValue, list) and self.roofsRValue != 0:
+            roofsUValue = 1/self.roofsRValue
+        else:
+            roofsUValue = 0.2
 
         self.totalWindowUA += self.totalWindowArea * windowsUValue
         self.totalDoorUA += self.totalDoorArea * doorsUValue
@@ -277,10 +296,18 @@ class Door(BuildingComponent):
             drawLine(self.cx - self.length/2, self.cy, self.cx - self.length/2 + self.length/2,self.cy - self.length/2, fill = 'white', lineWidth = 1)
 
 class Floor(BuildingComponent):
+    def __init__(self, length, height, width, uValue):
+        super().__init__(length, height, uValue)
+        self.width = width
+
     def calculateArea(self):
         return app.building.length * app.building.width
 
 class Roof(BuildingComponent):
+    def __init__(self, length, height, width, uValue):
+        super().__init__(length, height, uValue)
+        self.width = width
+        
     def calculateArea(self):
         return app.building.length * app.building.width
 
