@@ -25,9 +25,9 @@ def draw0HomeScreen(app):
     buttonReset.draw()
 
 def draw1DrawScreen(app):
-    buttonsTop = Button(0, 4, app.width/4, 50,['1.PROJECT NAME', '2.LOCATION', '3.HEIGHT', '4.DIMENSIONS'])
-    buttonsTop2 = Button(50, 2, app.width/2, 50,['+ADD WINDOW', '+ADD DOOR'])
-    buttonsBottom2 = Button(app.height-100, 4, app.width/4, 50,['UNDO WINDOW', 'UNDO DOOR', '← BACK', 'FORWARD →'])
+    buttonsTop = Button(0, 5, app.width/5, 50,['1.PROJECT NAME', '2.LOCATION', '3. HDD', '4.HEIGHT', '5.DIMENSIONS'])
+    buttonsTop2 = Button(50, 3, app.width/3, 50,['+ADD WINDOW', '+ADD DOOR', '+ADD ROOM'])
+    buttonsBottom2 = Button(app.height-100, 5, app.width/5, 50,['UNDO WINDOW', 'UNDO DOOR', 'UNDO ROOM', '← BACK', 'FORWARD →'])
     buttonsBottom = Button(app.height-50, 3, app.width/3, 50,['RESET', 'TOGGLE VIEW', '⌂ HOME'])
     buttonsTop.draw()
     buttonsTop2.draw()
@@ -44,9 +44,9 @@ def draw1DrawScreen(app):
 
 
 def draw2DetailScreen(app):
-    buttonsTop = Button(app.height/2, 5, app.width/5, 50,['1. WALLS (W)', '2. WINDOWS (G)', '3. DOORS (D)', '4. FLOOR (F)', '5. ROOF (R)'])
+    buttonsMiddle = Button(app.height/2, 5, app.width/5, 50,['1. WALLS (W)', '2. WINDOWS (G)', '3. DOORS (D)', '4. FLOOR (F)', '5. ROOF (R)'])
     buttonsBottom = Button(app.height-50, 4, app.width/4, 50,['RESET', '⌂ HOME', '← BACK', 'FORWARD →'])
-    buttonsTop.draw()
+    buttonsMiddle.draw()
     buttonsBottom.draw()
     
     drawLabel('Press (W, G, D, F, R) or click on buttons to navigate.', app.width/2, app.height/2 + 100, size=app.textSize, fill='white', font=app.font, italic=True)
@@ -57,8 +57,13 @@ def drawDetailWallsScreen(app):
     buttonsTop = Button(0, 2, app.width/2, 50,['← BACK', 'FORWARD →'])
     buttonsTop.draw()
 
+    buttonsMiddle = Button(app.height/2, 2, app.width/2, 50,['ENTER U-VALUE', 'ENTER LAYERS'])
+    buttonsMiddle.draw()
+
     drawLabel('WALLS (W)', app.width/2, app.height/10, size=app.textSizeHead, fill='white', bold=True, font=app.font)
-    drawLabel(f'Current screen: {app.screen}', app.width-25, app.height-125, size=app.textSize, fill='white', font=app.font, align='right')
+
+    app.dropDownMenu.draw()
+
 
 def drawDetailWindowsScreen(app):
     buttonsTop = Button(0, 2, app.width/2, 50,['← BACK', 'FORWARD →'])

@@ -31,51 +31,12 @@ def castCmToMeter(app, dimension):
 ################ HEAT LOSS CALCULATIONS ################
 ########################################################
 
-def calculateHeatLossCoefficient(app):
-    """
-    Calculates components' heat loss coefficient using total area and U-Value(Transmissiont coefficient).
-
-    Parameters:
-    - total area (float): The area of the building component in m².
-    - total u-value (float): The U-value(1/R-value) of the component in W/m²K.
-
-    Returns:
-    - float: Heat loss coefficient in W/K.
-    """
-    totalArea = 0
-    totalRValue = 0
-
-    for wall in app.walls:
-        totalArea += wall.calculateArea()
-    for window in app.windows:
-        totalArea += window.calculateArea()
-        totalRValue += window.calculateRValue()
-    for door in app.doors:
-        totalArea += door.calculateArea()
-        totalRValue += door.calculateRValue()
-    for floor in app.floors:
-        totalArea += floor.calculateArea()
-        totalRValue += floor.calculateRValue()
-    for roof in app.roofs:
-        totalArea += roof.calculateArea()
-        totalRValue += roof.calculateRValue()
-    
-    totalUValue = 1/totalRValue
-    return totalArea * totalUValue
-
-def calculateInfiltrationHeatLoss(app):
-    ACH = 1.0
-    heatCapacityAir = 0.018 # BTU/hr*ft^3*F
-    volume = app.building.length * app.building.width * app.building.height
-    return ACH * heatCapacityAir * volume
-
-
-def calculateAnnualHeatLoss(app,walls, windows, doors, floors, roofs):
-    heatLossCoefficient = calculateHeatLossCoefficient(app,walls)
-    return heatLossCoefficient * 24 * app.heatingDegreeDays65F # BTU * 10^6 = MMBTU
-
-def calculateTotalHeatLoss(app,walls, windows, doors, floors, roofs):
-    return calculateAnnualHeatLoss(app,walls) + calculateInfiltrationHeatLoss(app)
+def calculateSharedWallArea(room, otherRoom):
+        sharedWallArea = 0
+        for wall in room.walls:
+            if wall in otherRoom.walls:
+                sharedWallArea += wall.calculateArea()
+        return sharedWallArea
 
 
 ########################################################
@@ -178,3 +139,36 @@ def navigateBack(app):
 
 def navigateForward(app):
     pass
+
+
+class dropDownMenu:
+    def __init__(self, items, x, y, width, height, buttonWidth, buttonHeight):
+        self.items = items
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.buttonWidth = buttonWidth
+        self.buttonHeight = buttonHeight
+
+        self.currStartIdx = 0
+        self.elementsPerPage = 8
+
+    def draw(self):
+        currPageItems = self.items[self.currStartIdx:self.currStartIdx+self.elementsPerPage]
+        for i in range(len(currPageItems)):
+            item = currPageItems[i]
+            drawRect(self.x, self.y + i*self.buttonHeight, self.buttonWidth, self.buttonHeight, fill='white', border='black', borderWidth=1)
+            drawLabel(item['Material'], self.x + self.buttonWidth/2, self.y + i*self.buttonHeight + self.buttonHeight/2, fill='black', size=app.textSizeSmall, font=app.font, align='center', bold = True)
+        
+        # navi buttons
+        drawRect(self.x, self.y + self.buttonHeight, self.buttonWidth, self.buttonHeight, fill='white', border='black', borderWidth=1)
+        drawLabel('⬆ UP', self.x + self.width, self.y + self.height, fill='black', size=app.textSizeSmall, font=app.font, align='center', bold = True)
+        drawRect(self.x, self.y + self.height + 10, self.buttonWidth, self.buttonHeight, fill='white', border='black', borderWidth=1)
+        drawLabel('⬇ DOWN', self.x + self.width/2, self.y + self.height + 15, fill='black', size=app.textSizeSmall, font=app.font, align='center', bold = True)
+
+    
+    def handleClick(self, mouseX, mouseY):
+        #implement
+        pass
+
