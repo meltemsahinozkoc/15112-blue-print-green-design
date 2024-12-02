@@ -257,8 +257,8 @@ def handleClickDrawScreen(app, mouseX, mouseY):
 
             stdRoofHeigth = 20
             stdRoofUValue = 0.1
-            floor = Floor(app.building.lenght, stdFloorHeigth, app.building.width, stdFloorUValue)
-            roof = Roof(app.building.lenght, stdRoofHeigth, app.building.width, stdRoofUValue)
+            floor = Floor(app.building.length, stdFloorHeigth, app.building.width, stdFloorUValue)
+            roof = Roof(app.building.length, stdRoofHeigth, app.building.width, stdRoofUValue)
             app.floors = [floor]
             app.roofs = [roof]
             
