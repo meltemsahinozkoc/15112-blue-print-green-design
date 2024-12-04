@@ -69,10 +69,10 @@ def fetchFilteredThermalData():
 ############################################################ 
 
 thermalData = fetchFilteredThermalData()
-for entry in thermalData: # entry is a dictionary
-    print(f"Category: {entry['Category']}")
-    print(f"  Material: {entry['Material']}")
-    print(f"    Temperature (°C): {entry['Temperature (°C)']}")
-    print(f"    Conductivity (W/m·K): {entry['Conductivity (W/m·K)']}")
-    print(f"    Temperature (°F): {entry['Temperature (°F)']}")
-    print(f"    Conductivity (BTU·ft/h·°F): {entry['Conductivity (BTU·ft/h·°F)']}\n")
+# for entry in thermalData: # entry is a dictionary
+#     print(f"Category: {entry['Category']}")
+#     print(f"  Material: {entry['Material']}")
+#     print(f"    Temperature (°C): {entry['Temperature (°C)']}")
+#     print(f"    Conductivity (W/m·K): {entry['Conductivity (W/m·K)']}")
+#     print(f"    Temperature (°F): {entry['Temperature (°F)']}")
+#     print(f"    Conductivity (BTU·ft/h·°F): {entry['Conductivity (BTU·ft/h·°F)']}\n")

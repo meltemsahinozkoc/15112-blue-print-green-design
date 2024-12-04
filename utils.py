@@ -1,11 +1,4 @@
-# Some helper functions and auxilary implementations, such as unit conversion,
-# data validation/formatting, Buttons, Gallery etc
-
 from cmu_graphics import *
-
-########################################################
-#################### DATA VALIDATION ###################
-########################################################
 
 def isValidDimension(app, dimension):
     if not dimension.isdigit() or dimension == None or int(dimension) < 100 or int(dimension) > 500:
@@ -27,20 +20,41 @@ def hasAllParametersSet(app):
 def castCmToMeter(app, dimension):
     return dimension * 100
 
-########################################################
-################ HEAT LOSS CALCULATIONS ################
-########################################################
+def calculateSharedWallArea(room1, room2):
+    """
+    Calculate the shared wall area between two rooms.
+    Only calculates if one room is heated and the other is not.
 
-def calculateSharedWallArea(room, otherRoom): # WRONG!
-        sharedWallArea = 0
-        for wall in room.walls:
-            if wall in otherRoom.walls:
-                sharedWallArea += wall.calculateArea()
-        return sharedWallArea
+    Parameters:
+    - room1, room2: Room objects to calculate shared wall area
 
+    Returns:
+    - float: Shared wall area between UNHEATED rooms in square meters
+    """
+    if room1.isHeated == room2.isHeated:
+        return 0
 
+    xOverlap = max(0, min(room1.x + room1.width, room2.x + room2.width) - max(room1.x, room2.x))
+    yOverlap = max(0, min(room1.y + room1.height, room2.y + room2.height) - max(room1.y, room2.y))
+    
+    if xOverlap > 0 and yOverlap < 15/2:
+        return cm2ToMeter2(xOverlap * app.building.height)
+    elif yOverlap > 0 and xOverlap < 15/2:
+        return cm2ToMeter2(yOverlap * app.building.height)
+    else:
+        return 0
+
+    
+def cmToMeter(cm):
+    return cm/100
+
+def cm2ToMeter2(cm2):
+    return cm2/10000
+
+def WToKw(W):
+    return W/1000
 ########################################################
-##################### UI COMPONENTS ####################
+# UI COMPONENTS 
 ########################################################
 
 class Button:
@@ -54,9 +68,9 @@ class Button:
     def draw(self):
         for i in range(self.buttonNum):
             drawRect(i*self.buttonStep,self.top, self.buttonStep,
-                    self.buttonHeight , border = 'white', borderWidth = 1, fill = 'white', opacity = 40)
+                    self.buttonHeight , border = app.secondFill, borderWidth = 1, fill = app.secondFill, opacity = 40)
             drawLabel(self.text[i], (i+0.5)*self.buttonStep, self.top + self.buttonHeight/2,
-                        font = 'monospace', fill='white', bold = True, size = 16)
+                        font = 'monospace', fill=app.secondFill, bold = True, size = 16)
         
     def mouseOver(self,i):
         if app.cx != None and app.cy != None:
@@ -81,7 +95,7 @@ class Gallery:
     def draw(self):
         self.updateProjectCount()
         for i in range(self.projectCount):
-            drawRect(i*(self.galleryStep) + self.padding, self.top, self.width, self.length, fill = None, border = 'white', borderWidth = 1)
+            drawRect(i*(self.galleryStep) + self.padding, self.top, self.width, self.length, fill = None, border = app.secondFill, borderWidth = 1)
             
             currBuilding = self.items[i]
             newBuilding = currBuilding.createScaledBuildingIcon()
@@ -90,9 +104,9 @@ class Gallery:
             newBuilding.drawToPlace(center)
             
             cx, cy = center
-            drawLabel(currBuilding.name, cx, cy+120, fill = 'white', bold = True, size = 16)
-            drawLabel(currBuilding.location, cx, cy+140, fill = 'white', size = 12)
-            drawLabel(f'{currBuilding.annualHeatLoss} MMBTU', cx, cy+155, fill = 'white', size = 12)
+            drawLabel(currBuilding.name, cx, cy+120, fill = app.secondFill, bold = True, size = 16)
+            drawLabel(currBuilding.location, cx, cy+140, fill = app.secondFill, size = 12)
+            drawLabel(f'{currBuilding.annualHeatLoss} MMBTU', cx, cy+155, fill = app.secondFill, size = 12)
     
     def mouseOver(self,i):
         self.updateProjectCount()
@@ -127,15 +141,15 @@ class dropdownMenu:
         currPageItems = self.items[self.currStartIdx:self.currStartIdx+self.elementsPerPage]
         for i in range(len(currPageItems)):
             item = currPageItems[i]
-            drawRect(self.x, self.y + i*self.buttonHeight, self.buttonWidth, self.buttonHeight, fill='white', border='white', borderWidth=1, opacity = 20)
-            drawLabel(item['Material'], self.x + self.buttonWidth/2, self.y + i*self.buttonHeight + self.buttonHeight/2, fill='white', size=app.textSizeSmall, font=app.font, align='center', bold = True)
+            drawRect(self.x, self.y + i*self.buttonHeight, self.buttonWidth, self.buttonHeight, fill=app.secondFill, border=app.secondFill, borderWidth=1, opacity = 20)
+            drawLabel(item['Material'], self.x + self.buttonWidth/2, self.y + i*self.buttonHeight + self.buttonHeight/2, fill=app.secondFill, size=app.textSizeSmall, font=app.font, align='center', bold = True)
         
         # navi buttons
         buttonSize = self.buttonHeight
-        drawRect(self.x + self.width, self.y, buttonSize, buttonSize, fill='white', border='white', borderWidth=1, opacity = 20)
-        drawLabel('↑', self.x + self.width + buttonSize/2, self.y + buttonSize/2, fill='white', size=app.textSizeHead, align='center', bold = True)
-        drawRect(self.x + self.width, self.y + buttonSize, buttonSize, buttonSize, fill='white', border='white', borderWidth=1, opacity = 20)
-        drawLabel('↓', self.x + self.width + buttonSize/2, self.y + buttonSize + buttonSize/2, fill='white', size=app.textSizeHead, align='center', bold = True)
+        drawRect(self.x + self.width, self.y, buttonSize, buttonSize, fill=app.secondFill, border=app.secondFill, borderWidth=1, opacity = 20)
+        drawLabel('↑', self.x + self.width + buttonSize/2, self.y + buttonSize/2, fill=app.secondFill, size=app.textSizeHead, align='center', bold = True)
+        drawRect(self.x + self.width, self.y + buttonSize, buttonSize, buttonSize, fill=app.secondFill, border=app.secondFill, borderWidth=1, opacity = 20)
+        drawLabel('↓', self.x + self.width + buttonSize/2, self.y + buttonSize + buttonSize/2, fill=app.secondFill, size=app.textSizeHead, align='center', bold = True)
 
     
     def handleClick(self, mouseX, mouseY):
@@ -151,7 +165,7 @@ class dropdownMenu:
             currPageItems = self.items[self.currStartIdx:self.currStartIdx+self.elementsPerPage]
             for i in range(len(currPageItems)):
                 if mouseY > self.y + i*self.buttonHeight and mouseY < self.y + (i+1)*self.buttonHeight:
-                    itemRValue = pythonRound(1/(float(currPageItems[i]['Conductivity (W/m·K)'])), 2) # isDigit?
+                    itemRValue = pythonRound(1/(float(currPageItems[i]['Conductivity (W/m·K)'])), 2)
                     if app.screen == 'detailWalls':
                         if isinstance(app.building.wallsRValue, list):
                             app.building.wallsLayers.append(currPageItems[i]['Material'])
@@ -189,11 +203,11 @@ class TableCol:
     def draw(self):
         for i in range(len(self.items)):
             item = self.items[i]
-            drawRect(self.x, self.y + i*self.rowHeight, self.rowWidth, self.rowHeight, fill=None, border='white', borderWidth=1)
-            drawLabel(item, self.x + self.rowWidth/2, self.y + i*self.rowHeight + self.rowHeight/2, fill='white', size=app.textSize, font=app.font, align='center', bold = True)
+            drawRect(self.x, self.y + i*self.rowHeight, self.rowWidth, self.rowHeight, fill=None, border=app.secondFill, borderWidth=1)
+            drawLabel(item, self.x + self.rowWidth/2, self.y + i*self.rowHeight + self.rowHeight/2, fill=app.secondFill, size=app.textSize, font=app.font, align='center', bold = True)
 
 # class Icon:
-#     def __init__(self, r, origin, name=None, lineColor='white', lineWidth=1):
+#     def __init__(self, r, origin, name=None, lineColor=app.secondFill, lineWidth=1):
 #         self.r = r
 #         self.origin = origin
 #         self.name = name
@@ -201,7 +215,7 @@ class TableCol:
 #         self.lineWidth = lineWidth
     
 #     def draw(self, app):
-#         lineColor, fillColor = 'white'
+#         lineColor, fillColor = app.secondFill
 #         cx, cy = self.origin
 #         r = self.r
 #         if self.name == 'Forward Arrow':

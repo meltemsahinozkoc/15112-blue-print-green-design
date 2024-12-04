@@ -1,4 +1,3 @@
-# init + transition bw screens
 from cmu_graphics import *
 from building_components import *
 from web_scraping import *
@@ -7,7 +6,7 @@ from utils import *
 import webbrowser
 
 ########################################################
-################### INITIALIZE APP #####################
+# INITIALIZE APP 
 ########################################################
 
 def onAppStart(app):
@@ -26,7 +25,6 @@ def onAppStart(app):
 
     reset(app)
 
-
 def reset(app):
     initilaizeBuilding(app)
 
@@ -38,31 +36,48 @@ def reset(app):
     dropdownWidth = 200
     dropdownHeight = 200
     app.dropdownMenu = dropdownMenu(app.thermalData, (app.width/2 + 150), (app.height/2 + 50), dropdownWidth, dropdownHeight, 200, 50)
-    
 
+    # MOUSE HOVERS
+    # app.hx = None
+    # app.hy = None
+    # app.hovering = False
+    
 def initilaizeBuilding(app):
     stdWallHeight = 250
     app.building = Building(200,200,stdWallHeight) # default building
     app.heatingDegreeDays65F = 5340 # default HDD
     
-    app.walls = []
-    app.windows = []
-    app.doors = []
-    app.floors = []
-    app.roofs = []
 
-    app.rooms = []
 
     app.addWindow = False
     app.addDoor = False
     app.addRoom = False
     app.roomX = None
     app.roomY = None
+
+    stdWallWidth = 25
+    stdWallUValue = 0.2
+    w0 = Wall(app.building.width, app.building.height, stdWallWidth, stdWallUValue, app.width/2-app.building.width/2, app.height/2-app.building.height/2) # top wall, left point
+    w1 = Wall(app.building.length, app.building.height, stdWallWidth, stdWallUValue, app.width/2+app.building.width/2, app.height/2-app.building.height/2) # right wall, top point
+    w2 = Wall(app.building.width, app.building.height, stdWallWidth, stdWallUValue, app.width/2-app.building.width/2, app.height/2+app.building.height/2) # bottom wall, left point
+    w3 = Wall(app.building.length, app.building.height, stdWallWidth, stdWallUValue, app.width/2-app.building.width/2, app.height/2-app.building.height/2) # left wall, top point
+    app.building.walls = [w0,w1,w2,w3]
+
+    stdFloorHeigth = 15 # thickness
+    stdFloorUValue = 0.2
+
+    stdRoofHeigth = 20
+    stdRoofUValue = 0.15
+    floor = Floor(app.building.length, stdFloorHeigth, app.building.width, stdFloorUValue)
+    roof = Roof(app.building.length, stdRoofHeigth, app.building.width, stdRoofUValue)
+    app.building.floors = [floor]
+    app.building.roofs = [roof]
     
 
 def initializeHomeScreen(app):
     app.screen= 'home'
     app.fill = 'mediumblue'
+    app.secondFill = 'white'
     app.font = 'monospace'
     app.instruction = ('''WHAT
 BLUE PRINT GREEN DESIGN aims to integrate design and basic sustainability
@@ -83,7 +98,7 @@ retrofit suggestions.''')
 
 
 ########################################################
-####################### DRAWING ########################
+# DRAWING 
 ########################################################
 
 def redrawAll(app):
@@ -96,11 +111,11 @@ def redrawAll(app):
         if app.building != None:
             app.building.drawBuilding()
             app.building.drawMeasureLines()
-        if len(app.rooms) > 0:
+        if len(app.building.rooms) > 0:
             drawRooms(app)
-        if len(app.windows) > 0:
+        if len(app.building.windows) > 0:
             drawWindows(app)
-        if len(app.doors) > 0:
+        if len(app.building.doors) > 0:
             drawDoors(app)
         
     elif app.screen == 'detail':
@@ -119,21 +134,21 @@ def redrawAll(app):
         drawDetailRoofsScreen(app)
     
 def drawWindows(app):
-    for window in app.windows:
+    for window in app.building.windows:
         if window.type != None:
             window.draw()
                 
 def drawDoors(app):
-    for door in app.doors:
+    for door in app.building.doors:
         if door.type != None:
             door.draw()
 
 def drawRooms(app):
-    for room in app.rooms:
+    for room in app.building.rooms:
         room.draw()
 
 ########################################################
-################# MOUSE AND KEY EVENTS #################
+# MOUSE AND KEY EVENTS 
 ########################################################
 
 def onKeyPress(app, key):
@@ -157,6 +172,92 @@ def onKeyPress(app, key):
             app.screen = 'detailFloor'
         elif key == 'r':
             app.screen = 'detailRoof'
+        
+
+    if key == 's':
+        print(app.building.walls)
+        for wall in app.building.walls:
+            print(wall.length)
+        print(f'Shared wall heat loss area: {app.building.totalSharedWallArea}')
+        print(app.building.windows)
+        for window in app.building.windows:
+            print(window.length, window.height, window.uValue)
+        print(app.building.doors)
+        print(app.building.floors)
+        for floor in app.building.floors:
+            print(floor.length, floor.width)
+        print(app.building.roofs)
+        for roof in app.building.roofs:
+            print(roof.length, roof.width, roof.height)
+        print(app.building.rooms)
+
+        print(f'totalWindowArea: {app.building.totalWindowArea}')
+        print(f'totalDoorArea: {app.building.totalDoorArea}')
+        print(f'totalWallArea: {app.building.totalWallArea}')
+        print(f'totalFloorArea: {app.building.totalFloorArea}')
+        print(f'totalRoofArea: {app.building.totalRoofArea}')
+        
+        print('\n')
+        
+        print(f'wallsRValue: {app.building.wallsRValue}')
+        print(f'windowsRValue: {app.building.windowsRValue}')
+        print(f'doorsRValue: {app.building.doorsRValue}')
+        print(f'floorsRValue: {app.building.floorsRValue}')
+        print(f'roofsRValue: {app.building.roofsRValue}')
+
+        print('\n')
+        
+        print(f'wallsLayers: {app.building.wallsLayers}')
+        print(f'windowsLayers: {app.building.windowsLayers}')
+        print(f'doorsLayers: {app.building.doorsLayers}')
+        print(f'floorsLayers: {app.building.floorsLayers}')
+        print(f'roofsLayers: {app.building.roofsLayers}')
+
+        print('\n')
+
+        print(f'totalWindowUA: {app.building.totalWindowUA}')
+        print(f'totalDoorUA: {app.building.totalDoorUA}')
+        print(f'totalWallUA: {app.building.totalWallUA}')
+        print(f'totalFloorUA: {app.building.totalFloorUA}')
+        print(f'totalRoofUA: {app.building.totalRoofUA}')
+
+        print('\n')
+
+        print(f'infiltration: {app.building.calculateInfiltrationHeatLoss()}')
+        print(f'totalHeatLossCoefficient: {app.building.calculateTotalHeatLossCoefficient()}')
+        print(f'totalHeatLossCoefficitByComponent: {app.building.calculateTotalHeatLossCoefficientPerComponent()}')
+
+        print('\n')
+
+        print(f'annualHeatLossFunctionReturn: {app.building.calculateAnnualHeatLoss()}')
+        print(f'annualHeatLoss: {app.building.annualHeatLoss}')
+
+
+# def onMouseMove(app, mouseX, mouseY):
+#     app.hx = mouseXs
+#     app.hy = mouseY
+
+#     if app.screen == 'home':
+#         handleHoveringHomeScreen(app, mouseX, mouseY)
+#     elif app.screen == 'draw':
+#         handleHoveringDrawScreen(app, mouseX, mouseY)
+#     elif app.screen == 'detail':
+#         handleHoveringDetailScreen(app, mouseX, mouseY)
+#     elif app.screen == 'calculate':
+#         handleHoveringCalculateScreen(app, mouseX, mouseY)
+#     elif app.screen == 'detailWalls':
+#         app.currentComponent = app.walls
+#         handleHoveringDetailWallsScreen(app, mouseX, mouseY)
+#         app.dropdownMenu.handleHovering(mouseX, mouseY) # should be implemented!
+#     elif app.screen == 'detailWindows':
+#         handleHoveringDetailWindowsScreen(app, mouseX, mouseY)
+#     elif app.screen == 'detailDoors':
+#         handleHoveringDetailDoorsScreen(app, mouseX, mouseY)
+#     elif app.screen == 'detailFloor':
+#         handleHoveringDetailFloorScreen(app, mouseX, mouseY)
+#     elif app.screen == 'detailRoof':
+#         handleHoveringDetailRoofScreen(app, mouseX, mouseY)
+    
 
 
 def onMousePress(app, mouseX, mouseY):
@@ -227,7 +328,7 @@ def handleClickDrawScreen(app, mouseX, mouseY):
                     webbrowser.open("https://www.degreedays.net/")
             inputHDD = app.getTextInput('Enter the heating degree days of the location: ')
             if inputHDD != '' and inputHDD.isdigit():
-                app.heatingDegreeDay65 = int(inputHDD)
+                app.heatingDegreeDays65F = int(inputHDD)
             else:
                 app.showMessage('Invalid input. Try again with digits or the default value will be used.')
             
@@ -243,25 +344,28 @@ def handleClickDrawScreen(app, mouseX, mouseY):
             inputWidth = app.getTextInput('Enter building width (Between 100-500): ')
             if isValidDimension(app, inputWidth):
                 app.building.width = int(inputWidth)
+            if isValidDimension(app, inputLength) and isValidDimension(app, inputWidth):
+                stdWallWidth = 25
+                stdWallUValue = 0.2
+                w0 = Wall(app.building.width, app.building.height, stdWallWidth, stdWallUValue, app.width/2-app.building.width/2, app.height/2-app.building.height/2) # top wall, left point
+                w1 = Wall(app.building.length, app.building.height, stdWallWidth, stdWallUValue, app.width/2+app.building.width/2, app.height/2-app.building.height/2) # right wall, top point
+                w2 = Wall(app.building.width, app.building.height, stdWallWidth, stdWallUValue, app.width/2-app.building.width/2, app.height/2+app.building.height/2) # bottom wall, left point
+                w3 = Wall(app.building.length, app.building.height, stdWallWidth, stdWallUValue, app.width/2-app.building.width/2, app.height/2-app.building.height/2) # left wall, top point
+                app.walls = [w0,w1,w2,w3]
 
-            stdWallWidth = 25
-            stdWallUValue = 0.1
-            w0 = Wall(app.building.width, app.building.height, stdWallWidth, stdWallUValue, app.width/2-app.building.width/2, app.height/2-app.building.height/2) # top wall, left point
-            w1 = Wall(app.building.length, app.building.height, stdWallWidth, stdWallUValue, app.width/2+app.building.width/2, app.height/2-app.building.height/2) # right wall, top point
-            w2 = Wall(app.building.width, app.building.height, stdWallWidth, stdWallUValue, app.width/2-app.building.width/2, app.height/2+app.building.height/2) # bottom wall, left point
-            w3 = Wall(app.building.length, app.building.height, stdWallWidth, stdWallUValue, app.width/2-app.building.width/2, app.height/2-app.building.height/2) # left wall, top point
-            app.walls = [w0,w1,w2,w3]
+                stdFloorHeigth = 15 # thickness
+                stdFloorUValue = 0.2
 
-            stdFloorHeigth = 15 # thickness
-            stdFloorUValue = 0.1
+                stdRoofHeigth = 20
+                stdRoofUValue = 0.15
+                floor = Floor(app.building.length, stdFloorHeigth, app.building.width, stdFloorUValue)
+                roof = Roof(app.building.length, stdRoofHeigth, app.building.width, stdRoofUValue)
+                app.building.floors = [floor]
+                app.building.roofs = [roof]
 
-            stdRoofHeigth = 20
-            stdRoofUValue = 0.1
-            floor = Floor(app.building.length, stdFloorHeigth, app.building.width, stdFloorUValue)
-            roof = Roof(app.building.length, stdRoofHeigth, app.building.width, stdRoofUValue)
-            app.floors = [floor]
-            app.roofs = [roof]
-            
+                app.building.rooms = []
+                app.building.windows = []
+                app.building.doors = []
  
     # +add window,door,room buttons
     if mouseY > 50 and mouseY < 100:
@@ -279,7 +383,7 @@ def handleClickDrawScreen(app, mouseX, mouseY):
             stdWindowHeight = 60
             stdWindowUValue = 2
             newWindow = Window(stdWindowLenght,stdWindowHeight,stdWindowUValue, snappedX, snappedY)
-            app.windows.append(newWindow)
+            app.building.windows.append(newWindow)
             newWindow.type = classifyComponentAllignment(app)
             app.addWindow = False
 
@@ -288,7 +392,7 @@ def handleClickDrawScreen(app, mouseX, mouseY):
             stdDoorHeight = 180
             stdDoorUValue = 2
             newDoor = Door(stdDoorLength,stdDoorHeight,stdDoorUValue, snappedX, snappedY)
-            app.doors.append(newDoor)
+            app.building.doors.append(newDoor)
             newDoor.type = classifyComponentAllignment(app)
             app.addDoor = False
 
@@ -302,7 +406,7 @@ def handleClickDrawScreen(app, mouseX, mouseY):
                 roomHeight = abs(mouseY - app.roomY)
 
                 inputRoomName = app.getTextInput('Enter room name: ')
-                roomName = f'Room {len(app.rooms) + 1}' if inputRoomName == '' else inputRoomName
+                roomName = f'Room {len(app.building.rooms) + 1}' if inputRoomName == '' else inputRoomName
 
                 inputHeated = app.getTextInput('Is the room heated? (y/n)')
                 if inputHeated.lower() == 'y':
@@ -317,7 +421,13 @@ def handleClickDrawScreen(app, mouseX, mouseY):
                 top = min(app.roomY, mouseY)
 
                 newRoom = Room(left, top, roomWidth, roomHeight, roomName, isHeated)
-                app.rooms.append(newRoom)
+                app.building.rooms.append(newRoom)
+
+                # w1 = Wall(newRoom.width, app.building.height, 25, 0.2, newRoom.x, newRoom.y) # top wall
+                # w2 = Wall(newRoom.height, app.building.height, 25, 0.2, newRoom.x + newRoom.width, newRoom.y) # right wall
+                # w3 = Wall(newRoom.width, app.building.height, 25, 0.2, newRoom.x, newRoom.y + newRoom.height) # bottom wall
+                # w4 = Wall(newRoom.height, app.building.height, 25, 0.2, newRoom.x, newRoom.y) # left wall
+                # app.walls += w1,w2,w3,w4
 
                 app.roomX = None
                 app.roomY = None
@@ -326,14 +436,14 @@ def handleClickDrawScreen(app, mouseX, mouseY):
     # bottom2 buttons:
     if mouseY > app.height-100:
         if mouseX > 0 and mouseX < app.width/5:
-            if len(app.windows) > 0:
-                app.windows.pop()
+            if len(app.building.windows) > 0:
+                app.building.windows.pop()
         elif mouseX > app.width/5 and mouseX < 2*app.width/5:
-            if len(app.doors) > 0:
-                app.doors.pop()
+            if len(app.building.doors) > 0:
+                app.building.doors.pop()
         elif mouseX > 2*app.width/5 and mouseX < 3*app.width/5:
-            if len(app.rooms) > 0:
-                app.rooms.pop()
+            if len(app.building.rooms) > 0:
+                app.building.rooms.pop()
         elif mouseX > 3*app.width/5 and mouseX < 4*app.width/5:
             navigateBack(app)
         elif mouseX > 4*app.width/5:
