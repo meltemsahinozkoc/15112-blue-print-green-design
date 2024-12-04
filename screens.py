@@ -7,6 +7,7 @@ def drawBg(app):
 
 def draw0HomeScreen(app):    
     buttons = Button(app.height/2, 3, app.width/3, 50,['1."DRAW"', '2."DETAIL"', '3. "CALCULATE"'])
+    buttons.handleHover()
     buttons.draw()
     
     drawLabel('BLUE PRINT GREEN DESIGN', app.width/2, app.height/11, size=app.textSizeHead, fill=app.secondFill, bold=True, font=app.font)
@@ -20,6 +21,7 @@ def draw0HomeScreen(app):
     drawLabel('Press (1, 2, 3) or click on buttons to navigate.', app.width/2, app.height/2+75, size=app.textSize, fill=app.secondFill, font=app.font, italic=True)
     drawLabel('GALLERY', app.width/2, app.height/1.6, size=app.textSizeHead, fill=app.secondFill, bold=True, font=app.font)
     buttonReset = Button((app.height/1.6)+20, 1, app.width/1, 30, ['RESET GALLERY'])
+    buttonReset.handleHover()
     buttonReset.draw()
 
 def draw1DrawScreen(app):
@@ -27,10 +29,15 @@ def draw1DrawScreen(app):
     buttonsTop2 = Button(50, 3, app.width/3, 50,['+ADD WINDOW', '+ADD DOOR', '+ADD ROOM'])
     buttonsBottom2 = Button(app.height-100, 5, app.width/5, 50,['UNDO WINDOW', 'UNDO DOOR', 'UNDO ROOM', '← BACK', 'FORWARD →'])
     buttonsBottom = Button(app.height-50, 3, app.width/3, 50,['RESET', 'SAVE & CLOSE', '⌂ HOME'])
+    buttonsTop.handleHover()
+    buttonsTop2.handleHover()
+    buttonsBottom.handleHover()
+    buttonsBottom2.handleHover()
     buttonsTop.draw()
     buttonsTop2.draw()
     buttonsBottom.draw()
     buttonsBottom2.draw()
+
 
     drawLabel(f'PROJECT NAME: {app.building.name}', 25, 125, size=app.textSize, fill=app.secondFill, bold=True, font=app.font, align='left')
     drawLabel(f'LOCATION: {app.building.location}', 25, 150, size=app.textSize, fill=app.secondFill, bold=True, font=app.font, align='left')
@@ -56,9 +63,11 @@ def draw1DrawScreen(app):
 def draw2DetailScreen(app):
     buttonsMiddle = Button(app.height/2, 5, app.width/5, 50,['1. WALLS (W)', '2. WINDOWS (G)', '3. DOORS (D)', '4. FLOOR (F)', '5. ROOF (R)'])
     buttonsBottom = Button(app.height-50, 4, app.width/4, 50,['RESET', '⌂ HOME', '← BACK', 'FORWARD →'])
+    buttonsMiddle.handleHover()
+    buttonsBottom.handleHover()
     buttonsMiddle.draw()
     buttonsBottom.draw()
-    
+
     drawLabel('Press (W, G, D, F, R) or click on buttons to navigate.', app.width/2, app.height/2 + 100, size=app.textSize, fill=app.secondFill, font=app.font, italic=True)
     drawLabel(f'Current screen: {app.screen}', app.width-25, app.height-75, size=app.textSize, fill=app.secondFill, font=app.font, align='right')
     
@@ -67,6 +76,7 @@ def drawDetailWallsScreen(app):
     drawLabel('WALLS (W)', app.width/2, app.height/10, size=app.textSizeHead, fill=app.secondFill, bold=True, font=app.font)
 
     buttonsTop = Button(0, 4, app.width/4, 50,['← BACK', 'RESET', 'UNDO WALL', 'FORWARD →'])
+    buttonsTop.handleHover()
     buttonsTop.draw()
 
     drawLabel('Enter U-value if you know it.', app.width/2, app.height/8, size=app.textSize, fill=app.secondFill, bold=True, font=app.font)
@@ -74,6 +84,7 @@ def drawDetailWallsScreen(app):
     drawLabel('The app will do the work for you!', app.width/2, app.height/7 + 40, size=app.textSize, fill=app.secondFill, bold=True, font=app.font)
 
     buttonsMiddle = Button(app.height/2, 2, app.width/2, 50,['ENTER U-VALUE', 'OR ENTER LAYERS'])
+    buttonsMiddle.handleHover()
     buttonsMiddle.draw()
 
     app.dropdownMenu.draw()
@@ -88,6 +99,7 @@ def drawDetailWallsScreen(app):
 
 def drawDetailWindowsScreen(app):
     buttonsTop = Button(0, 4, app.width/4, 50,['← BACK', 'RESET', 'UNDO WINDOW', 'FORWARD →'])
+    buttonsTop.handleHover()
     buttonsTop.draw()
 
     drawLabel('WINDOWS (G)', app.width/2, app.height/10, size=app.textSizeHead, fill=app.secondFill, bold=True, font=app.font)
@@ -97,6 +109,7 @@ def drawDetailWindowsScreen(app):
     drawLabel('The app will do the work for you!', app.width/2, app.height/7 + 40, size=app.textSize, fill=app.secondFill, bold=True, font=app.font)
 
     buttonsMiddle = Button(app.height/2, 2, app.width/2, 50,['ENTER U-VALUE', 'OR ENTER LAYERS'])
+    buttonsMiddle.handleHover()
     buttonsMiddle.draw()
 
     app.dropdownMenu.draw()
@@ -111,6 +124,7 @@ def drawDetailWindowsScreen(app):
 
 def drawDetailDoorsScreen(app):
     buttonsTop = Button(0, 4, app.width/4, 50,['← BACK', 'RESET', 'UNDO DOOR', 'FORWARD →'])
+    buttonsTop.handleHover()
     buttonsTop.draw()
 
     drawLabel('DOORS (D)', app.width/2, app.height/10, size=app.textSizeHead, fill=app.secondFill, bold=True, font=app.font)
@@ -120,7 +134,9 @@ def drawDetailDoorsScreen(app):
     drawLabel('The app will do the work for you!', app.width/2, app.height/7 + 40, size=app.textSize, fill=app.secondFill, bold=True, font=app.font)
 
     buttonsMiddle = Button(app.height/2, 2, app.width/2, 50,['ENTER U-VALUE', 'OR ENTER LAYERS'])
+    buttonsMiddle.handleHover()
     buttonsMiddle.draw()
+    
 
     app.dropdownMenu.draw()
 
@@ -134,6 +150,7 @@ def drawDetailDoorsScreen(app):
     
 def drawDetailFloorsScreen(app):
     buttonsTop = Button(0, 4, app.width/4, 50,['← BACK', 'RESET', 'UNDO FLOOR', 'FORWARD →'])
+    buttonsTop.handleHover()
     buttonsTop.draw()
     
     drawLabel('FLOORS (F)', app.width/2, app.height/10, size=app.textSizeHead, fill=app.secondFill, bold=True, font=app.font)
@@ -143,6 +160,7 @@ def drawDetailFloorsScreen(app):
     drawLabel('The app will do the work for you!', app.width/2, app.height/7 + 40, size=app.textSize, fill=app.secondFill, bold=True, font=app.font)
 
     buttonsMiddle = Button(app.height/2, 2, app.width/2, 50,['ENTER U-VALUE', 'OR ENTER LAYERS'])
+    buttonsMiddle.handleHover()
     buttonsMiddle.draw()
 
     app.dropdownMenu.draw()
@@ -157,6 +175,7 @@ def drawDetailFloorsScreen(app):
 
 def drawDetailRoofsScreen(app):
     buttonsTop = Button(0, 4, app.width/4, 50,['← BACK', 'RESET', 'UNDO ROOF', 'FORWARD →'])
+    buttonsTop.handleHover()
     buttonsTop.draw()
 
     drawLabel('ROOFS (R)', app.width/2, app.height/10, size=app.textSizeHead, fill=app.secondFill, bold=True, font=app.font)
@@ -166,6 +185,7 @@ def drawDetailRoofsScreen(app):
     drawLabel('The app will do the work for you!', app.width/2, app.height/7 + 40, size=app.textSize, fill=app.secondFill, bold=True, font=app.font)
 
     buttonsMiddle = Button(app.height/2, 2, app.width/2, 50,['ENTER U-VALUE', 'OR ENTER LAYERS'])
+    buttonsMiddle.handleHover()
     buttonsMiddle.draw()
 
     app.dropdownMenu.draw()
@@ -251,4 +271,5 @@ def draw3CalculateScreen(app):
 
     drawLabel(f'Current screen: {app.screen}', app.width-25, app.height-75, size=app.textSize, fill=app.secondFill, font=app.font, align='right')
     buttonsBottom = Button(app.height-50, 4, app.width/4, 50,['RESET', '⌂ HOME', '← BACK', 'SAVE & CLOSE'])
+    buttonsBottom.handleHover()
     buttonsBottom.draw()

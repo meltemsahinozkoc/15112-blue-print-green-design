@@ -37,10 +37,8 @@ def reset(app):
     dropdownHeight = 200
     app.dropdownMenu = dropdownMenu(app.thermalData, (app.width/2 + 150), (app.height/2 + 50), dropdownWidth, dropdownHeight, 200, 50)
 
-    # MOUSE HOVERS
-    # app.hx = None
-    # app.hy = None
-    # app.hovering = False
+    app.hx = None
+    app.hy = None
     
 def initilaizeBuilding(app):
     stdWallHeight = 250
@@ -233,31 +231,9 @@ def onKeyPress(app, key):
         print(f'annualHeatLoss: {app.building.annualHeatLoss}')
 
 
-# def onMouseMove(app, mouseX, mouseY):
-#     app.hx = mouseXs
-#     app.hy = mouseY
-
-#     if app.screen == 'home':
-#         handleHoveringHomeScreen(app, mouseX, mouseY)
-#     elif app.screen == 'draw':
-#         handleHoveringDrawScreen(app, mouseX, mouseY)
-#     elif app.screen == 'detail':
-#         handleHoveringDetailScreen(app, mouseX, mouseY)
-#     elif app.screen == 'calculate':
-#         handleHoveringCalculateScreen(app, mouseX, mouseY)
-#     elif app.screen == 'detailWalls':
-#         app.currentComponent = app.walls
-#         handleHoveringDetailWallsScreen(app, mouseX, mouseY)
-#         app.dropdownMenu.handleHovering(mouseX, mouseY) # should be implemented!
-#     elif app.screen == 'detailWindows':
-#         handleHoveringDetailWindowsScreen(app, mouseX, mouseY)
-#     elif app.screen == 'detailDoors':
-#         handleHoveringDetailDoorsScreen(app, mouseX, mouseY)
-#     elif app.screen == 'detailFloor':
-#         handleHoveringDetailFloorScreen(app, mouseX, mouseY)
-#     elif app.screen == 'detailRoof':
-#         handleHoveringDetailRoofScreen(app, mouseX, mouseY)
-    
+def onMouseMove(app, mouseX, mouseY):
+    app.hx = mouseX
+    app.hy = mouseY
 
 
 def onMousePress(app, mouseX, mouseY):
@@ -278,7 +254,7 @@ def onMousePress(app, mouseX, mouseY):
     elif app.screen == 'calculate':
         handleClickCalculateScreen(app, mouseX, mouseY)
     elif app.screen == 'detailWalls':
-        app.currentComponent = app.walls
+        app.currentComponent = app.building.walls
         handleClickDetailWallsScreen(app, mouseX, mouseY)
         app.dropdownMenu.handleClick(mouseX, mouseY)
     elif app.screen == 'detailWindows':
@@ -351,7 +327,7 @@ def handleClickDrawScreen(app, mouseX, mouseY):
                 w1 = Wall(app.building.length, app.building.height, stdWallWidth, stdWallUValue, app.width/2+app.building.width/2, app.height/2-app.building.height/2) # right wall, top point
                 w2 = Wall(app.building.width, app.building.height, stdWallWidth, stdWallUValue, app.width/2-app.building.width/2, app.height/2+app.building.height/2) # bottom wall, left point
                 w3 = Wall(app.building.length, app.building.height, stdWallWidth, stdWallUValue, app.width/2-app.building.width/2, app.height/2-app.building.height/2) # left wall, top point
-                app.walls = [w0,w1,w2,w3]
+                app.building.walls = [w0,w1,w2,w3]
 
                 stdFloorHeigth = 15 # thickness
                 stdFloorUValue = 0.2
@@ -427,7 +403,7 @@ def handleClickDrawScreen(app, mouseX, mouseY):
                 # w2 = Wall(newRoom.height, app.building.height, 25, 0.2, newRoom.x + newRoom.width, newRoom.y) # right wall
                 # w3 = Wall(newRoom.width, app.building.height, 25, 0.2, newRoom.x, newRoom.y + newRoom.height) # bottom wall
                 # w4 = Wall(newRoom.height, app.building.height, 25, 0.2, newRoom.x, newRoom.y) # left wall
-                # app.walls += w1,w2,w3,w4
+                # app.building.walls += w1,w2,w3,w4
 
                 app.roomX = None
                 app.roomY = None

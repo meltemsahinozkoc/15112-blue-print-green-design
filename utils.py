@@ -64,21 +64,29 @@ class Button:
         self.buttonHeight = buttonHeight
         self.text = text
         self.top = top
+        self.isHovered = [False]*buttonNum
 
     def draw(self):
         for i in range(self.buttonNum):
-            drawRect(i*self.buttonStep,self.top, self.buttonStep,
-                    self.buttonHeight , border = app.secondFill, borderWidth = 1, fill = app.secondFill, opacity = 40)
-            drawLabel(self.text[i], (i+0.5)*self.buttonStep, self.top + self.buttonHeight/2,
-                        font = 'monospace', fill=app.secondFill, bold = True, size = 16)
+            fill = 'gray' if self.isHovered[i] else app.secondFill
+            drawRect(i * self.buttonStep, self.top, self.buttonStep,
+                     self.buttonHeight, border=app.secondFill, borderWidth=1,
+                     fill=fill, opacity=40)
+            drawLabel(self.text[i], (i + 0.5) * self.buttonStep, self.top + self.buttonHeight / 2,
+                      font='monospace', fill=app.secondFill, bold=True, size=16)
         
-    def mouseOver(self,i):
-        if app.cx != None and app.cy != None:
-            if (app.cx > i*self.buttonStep and app.cx < (i+1)*self.buttonStep and
-                        app.cy > self.top and app.cy < self.top + self.buttonHeight):
-                app.mouseOverButton = True
+    def mouseOver(self, i):
+        if app.hx is not None and app.hy is not None:
+            if (i * self.buttonStep < app.hx < (i + 1) * self.buttonStep and
+                    self.top < app.hy < self.top + self.buttonHeight):
+                self.isHovered[i] = True
                 return True
+            self.isHovered[i] = False
         return False
+
+    def handleHover(self):
+        for i in range(self.buttonNum):
+            self.mouseOver(i) 
 
 class Gallery:
     def __init__(self):

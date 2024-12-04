@@ -20,9 +20,9 @@ def fetchFilteredThermalData():
     soup = BeautifulSoup(response.content, 'html.parser')
     data = {}
 
-############################################################
-# LLM ASSISTANCE STARTS HERE
-############################################################ 
+    ############################################################
+    # LLM ASSISTANCE STARTS HERE
+    ############################################################
     table_container = soup.find('div', class_='articleTableContainerScrollFrame') # found via inspect
     if not table_container:
         print("Table container not found.")
@@ -64,9 +64,9 @@ def fetchFilteredThermalData():
                     'Conductivity (BTU·ft/h·°F)': conductivity_btu_ft_h_f
                 })
     return data
-############################################################
-# LLM ASSISTANCE ENDS HERE
-############################################################ 
+    ############################################################
+    # LLM ASSISTANCE ENDS HERE
+    ############################################################ 
 
 thermalData = fetchFilteredThermalData()
 # for entry in thermalData: # entry is a dictionary

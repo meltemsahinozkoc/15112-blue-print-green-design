@@ -108,6 +108,11 @@ class Building:
 
     def calculateInfiltrationHeatLoss(self):
         """
+        Calculates the heat loss due to infiltration.
+
+        Returns:
+        - float: Heat loss from infiltration in W/m^3K.
+
         Unit: W/m^3K
         """
         ACH = 1.0 # number of air changes per hour
@@ -119,17 +124,13 @@ class Building:
 
     def calculateTotalHeatLossCoefficient(self):
         """
-        Unit: W/K
         Calculates components' heat loss coefficient using total area and U-Value(Transmissiont coefficient).
 
-        Parameters:
-        - total area (float): The area of the building component in m².
-        - total u-value (float): The U-value(1/R-value) of the component in W/m²K.
-
         Returns:
-        - float: Heat loss coefficient in W/K.
-        """
+        - float: Total heat loss coefficient in W/K.
 
+        Unit: W/K
+        """
 
         for window in self.windows:
             self.totalWindowArea = window.calculateArea()
@@ -144,8 +145,8 @@ class Building:
 
         # heat loss between heated-unheated rooms
         sharedWallArea = 0
-        for room in app.rooms:
-            for otherRoom in app.rooms:
+        for room in app.building.rooms:
+            for otherRoom in app.building.rooms:
                 sharedWallArea += calculateSharedWallArea(room, otherRoom)
                 self.totalSharedWallArea = sharedWallArea
             
@@ -195,7 +196,12 @@ class Building:
 
     def calculateTotalHeatLossCoefficientPerComponent(self):
         """
-        Unit: W/K
+        Calculates the percentage contribution of each building component to the total heat loss coefficient.
+
+        Returns:
+        - A dictionary containing the percentage contribution of each component to the total heat loss coefficient.
+
+        Unit: Percentage (%)
         """
         windowRatio = pythonRound(100*self.totalWindowUA / self.calculateTotalHeatLossCoefficient(),2)
         doorRatio = pythonRound(100*self.totalDoorUA / self.calculateTotalHeatLossCoefficient(),2)
@@ -208,6 +214,11 @@ class Building:
 
     def calculateAnnualHeatLoss(self):
         """
+        Calculates the annual heat loss for the building based on heating degree days.
+
+        Returns:
+        - float: Annual heat loss in kWh/year.
+
         Unit: kWh/year
         """
         # Convert Watt to kWh
