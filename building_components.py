@@ -10,12 +10,16 @@ class Building:
         self.width = width
         self.height = height
 
+        self.scaledWidth = self.width * 0.1
+        self.scaledLength = self.length * 0.1
+
         self.name = f'Project {(len(app.gallery.items)) + 1}'
         self.location = 'Unknown Location'
         self.annualHeatLoss = 'Unknown'
         self.infiltrationLoss = None
 
         self.walls = []
+        self.interiorWalls = []
         self.windows = []
         self.doors = []
         self.floors = []
@@ -51,14 +55,14 @@ class Building:
         self.thermalColor = 'white'
     
     def drawBuilding(self):
-        drawRect(app.width/2, app.height/2, self.width, self.length, fill = 'lightSalmon', border = self.thermalColor, borderWidth = 15, align = 'center')
+        drawRect(app.width/2, app.height/2, self.scaledWidth, self.scaledLength, fill = 'lightSalmon', border = self.thermalColor, borderWidth = 15, align = 'center')
 
     def drawToPlace(self, center):
         cx, cy = center
         drawRect(cx, cy, self.width, self.length, fill = None, border = self.thermalColor, borderWidth = 3, align = 'center')
 
     def createScaledBuildingIcon(self):
-        scaleFactor = 0.3
+        scaleFactor = 0.03
         scaledLength = self.length * scaleFactor
         scaledWidth = self.width * scaleFactor
         scaledHeight = self.height * scaleFactor
@@ -70,25 +74,28 @@ class Building:
         textSize = 12
         lineW = 1
         lineArrowDist = 5
-        
+        scaleFactor = 0.1
+        scaledWidth = self.width * scaleFactor
+        scaledLength = self.length * scaleFactor
+
         # horizontal measure line
-        drawLine((app.width/2 - self.width/2), (app.height/2 - self.length/2) - paddingDist,
-                 (app.width/2 + self.width/2), (app.height/2 - self.length/2) - paddingDist, fill=app.secondFill, lineWidth=lineW)
-        drawLine((app.width/2 - self.width/2), (app.height/2 - self.length/2) - paddingDist - lineArrowDist,
-                 (app.width/2 - self.width/2), (app.height/2 - self.length/2) - paddingDist + lineArrowDist, fill=app.secondFill, lineWidth=lineW)
-        drawLine((app.width/2 + self.width/2), (app.height/2 - self.length/2) - paddingDist - lineArrowDist,
-                 (app.width/2 + self.width/2), (app.height/2 - self.length/2) - paddingDist + lineArrowDist, fill=app.secondFill, lineWidth=lineW)
+        drawLine((app.width/2 - scaledWidth/2), (app.height/2 - scaledLength/2) - paddingDist,
+                 (app.width/2 + scaledWidth/2), (app.height/2 - scaledLength/2) - paddingDist, fill=app.secondFill, lineWidth=lineW)
+        drawLine((app.width/2 - scaledWidth/2), (app.height/2 - scaledLength/2) - paddingDist - lineArrowDist,
+                 (app.width/2 - scaledWidth/2), (app.height/2 - scaledLength/2) - paddingDist + lineArrowDist, fill=app.secondFill, lineWidth=lineW)
+        drawLine((app.width/2 + scaledWidth/2), (app.height/2 - scaledLength/2) - paddingDist - lineArrowDist,
+                 (app.width/2 + scaledWidth/2), (app.height/2 - scaledLength/2) - paddingDist + lineArrowDist, fill=app.secondFill, lineWidth=lineW)
         
         # vertical measure line
-        drawLine((app.width/2 + self.width/2) + paddingDist, (app.height/2 - self.length/2),
-                 (app.width/2 + self.width/2) + paddingDist, (app.height/2 + self.length/2), fill=app.secondFill, lineWidth=lineW)
-        drawLine((app.width/2 + self.width/2) + paddingDist - lineArrowDist, (app.height/2 - self.length/2),
-                 (app.width/2 + self.width/2) + paddingDist + lineArrowDist, (app.height/2 - self.length/2), fill=app.secondFill, lineWidth=lineW)
-        drawLine((app.width/2 + self.width/2) + paddingDist - lineArrowDist, (app.height/2 + self.length/2),
-                 (app.width/2 + self.width/2) + paddingDist + lineArrowDist, (app.height/2 + self.length/2), fill=app.secondFill, lineWidth=lineW)
+        drawLine((app.width/2 + scaledWidth/2) + paddingDist, (app.height/2 - scaledLength/2),
+                 (app.width/2 + scaledWidth/2) + paddingDist, (app.height/2 + scaledLength/2), fill=app.secondFill, lineWidth=lineW)
+        drawLine((app.width/2 + scaledWidth/2) + paddingDist - lineArrowDist, (app.height/2 - scaledLength/2),
+                 (app.width/2 + scaledWidth/2) + paddingDist + lineArrowDist, (app.height/2 - scaledLength/2), fill=app.secondFill, lineWidth=lineW)
+        drawLine((app.width/2 + scaledWidth/2) + paddingDist - lineArrowDist, (app.height/2 + scaledLength/2),
+                 (app.width/2 + scaledWidth/2) + paddingDist + lineArrowDist, (app.height/2 + scaledLength/2), fill=app.secondFill, lineWidth=lineW)
         
-        drawLabel(f'{self.width} cm', app.width/2, (app.height/2 - self.length/2 - textDist), size=textSize, fill=app.secondFill)
-        drawLabel(f'{self.length} cm', (app.width/2 + self.width/2 + textDist*1.5), app.height/2, size=textSize, fill=app.secondFill)
+        drawLabel(f'{self.width} cm', app.width/2, (app.height/2 - scaledLength/2 - textDist), size=textSize, fill=app.secondFill)
+        drawLabel(f'{self.length} cm', (app.width/2 + scaledWidth/2 + textDist*1.5), app.height/2, size=textSize, fill=app.secondFill)
 
     
     def __repr__(self):
@@ -251,6 +258,10 @@ class Room:
         heatingSituation = 'HEATED' if self.isHeated else 'NOT HEATED'
         drawLabel(heatingSituation, self.x + self.width / 2, self.y + self.height / 2 + 5, size=app.textSizeSmall-2, fill = 'black', font = app.font, align = 'center')
 
+    def drawClickPoints(self):
+        drawCircle(self.x, self.y, 5, fill = 'red')
+        drawCircle(self.x+self.width, self.y+self.height, 5, fill = 'red')
+
 
 ########################################################
 # BUILDING COMPONENT 
@@ -299,12 +310,12 @@ class Window(BuildingComponent):
         self.cy = cy
     
     def draw(self):
-        if self.type == 'vertical':
+        if self.type == 'verticalLeft' or self.type == 'verticalRight':
             drawRect(self.cx, self.cy, 15, self.length, fill = app.fill, align = 'center')
             drawLine(self.cx-2.5, self.cy - self.length/2, self.cx-2.5, self.cy + self.length/2, fill = app.secondFill, lineWidth = 1)
             drawLine(self.cx, self.cy - self.length/2, self.cx, self.cy + self.length/2, fill = app.secondFill, lineWidth = 1)
             drawLine(self.cx+2.5, self.cy - self.length/2, self.cx+2.5, self.cy + self.length/2, fill = app.secondFill, lineWidth = 1)
-        elif self.type == 'horizontal':
+        elif self.type == 'horizontalTop' or self.type == 'horizontalBottom':
             drawRect(self.cx, self.cy, self.length, 15, fill = app.fill, align = 'center')
             drawLine(self.cx - self.length/2, self.cy-2.5, self.cx + self.length/2, self.cy-2.5, fill = app.secondFill, lineWidth = 1)
             drawLine(self.cx - self.length/2, self.cy, self.cx + self.length/2, self.cy, fill = app.secondFill, lineWidth = 1)
@@ -318,12 +329,18 @@ class Door(BuildingComponent):
         self.cy = cy
 
     def draw(self):
-        if self.type == 'vertical':
+        if self.type == 'verticalLeft':
             drawRect(self.cx, self.cy, 15, self.length, fill = app.fill, align = 'center')
             drawLine(self.cx, self.cy - self.length/2, self.cx - self.length/2, self.cy - self.length/2 + self.length/2, fill = app.secondFill, lineWidth = 1)
-        elif self.type == 'horizontal':
+        elif self.type == 'horizontalTop':
             drawRect(self.cx, self.cy, self.length, 15, fill = app.fill, align = 'center')
             drawLine(self.cx - self.length/2, self.cy, self.cx - self.length/2 + self.length/2,self.cy - self.length/2, fill = app.secondFill, lineWidth = 1)
+        elif self.type == 'verticalRight':
+            drawRect(self.cx, self.cy, 15, self.length, fill = app.fill, align = 'center')
+            drawLine(self.cx, self.cy - self.length/2, self.cx + self.length/2, self.cy - self.length/2 + self.length/2, fill = app.secondFill, lineWidth = 1)
+        elif self.type == 'horizontalBottom':
+            drawRect(self.cx, self.cy, self.length, 15, fill = app.fill, align = 'center')
+            drawLine(self.cx - self.length/2, self.cy, self.cx - self.length/2 + self.length/2,self.cy + self.length/2, fill = app.secondFill, lineWidth = 1)  
 
 class Floor(BuildingComponent):
     def __init__(self, length, height, width, uValue):

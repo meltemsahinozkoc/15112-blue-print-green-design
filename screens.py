@@ -44,10 +44,10 @@ def draw1DrawScreen(app):
     drawLabel(f'HEATING DEGREE DAYS: {app.heatingDegreeDays65F}', 25, 175, size=app.textSize, fill=app.secondFill, bold=True, font=app.font, align='left')
     drawLabel(f'ANNUAL HEAT LOSS: {app.building.annualHeatLoss} kWh/year', 25, 200, size=app.textSize, fill=app.secondFill, bold=True, font=app.font, align='left')
 
-    drawLabel('+ TIP 1: Start with the Project Name and follow the numbers!', 25, app.height-175, size=app.textSize, fill=app.secondFill, font=app.font, align='left', bold = True)
-    drawLabel('+ TIP 2: Press S to recalculate the annual heat loss!', 25, app.height-150, size=app.textSize, fill=app.secondFill, font=app.font, align='left', bold = True)
-    drawLabel(app.building, 25, app.height-125, size=app.textSize, fill=app.secondFill, font=app.font, align='left')
-    drawLabel(f'Current screen: {app.screen}', app.width-25, app.height-125, size=app.textSize, fill=app.secondFill, font=app.font, align='right')
+    drawLabel('+ TIP 1: Start with the Project Name and follow the numbers!', 25, app.height-175, size=app.textSize, fill=app.secondFill, font=app.font, align='left', italic=True, bold=True)
+    drawLabel('+ TIP 2: Press S to recalculate the annual heat loss!', 25, app.height-150, size=app.textSize, fill=app.secondFill, font=app.font, align='left', italic=True, bold=True)
+    drawLabel(app.building, 25, app.height-125, size=app.textSize, fill=app.secondFill, font=app.font, align='left', bold=True)
+    drawLabel(f'Current screen: {app.screen}', app.width-25, app.height-125, size=app.textSize, fill=app.secondFill, font=app.font, align='right', bold=True)
 
 
     if app.building.annualHeatLoss != 'Unknown':
@@ -251,13 +251,13 @@ def draw3CalculateScreen(app):
 
         if app.building.annualHeatLoss != None:
             if app.building.annualHeatLoss > 15000:
-                isExcellent = 'EXCELLENT'
-            elif app.building.annualHeatLoss > 10000:
-                isExcellent = 'GOOD'
-            elif app.building.annualHeatLoss > 5000:
-                isExcellent = 'MODERATE'
-            else:
                 isExcellent = 'POOR'
+            elif app.building.annualHeatLoss > 10000:
+                isExcellent = 'MODERATE'
+            elif app.building.annualHeatLoss > 5000:
+                isExcellent = 'GOOD'
+            else:
+                isExcellent = 'EXCELLENT'
         
         drawLabel(f'- ANNUAL HEAT LOSS: {isExcellent} with {app.building.annualHeatLoss} kWh/year', app.width/2, app.height-200, size=app.textSize, fill=app.secondFill, bold=True, font=app.font)
 

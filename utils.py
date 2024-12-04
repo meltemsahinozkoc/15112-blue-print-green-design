@@ -1,14 +1,14 @@
 from cmu_graphics import *
 
 def isValidDimension(app, dimension):
-    if not dimension.isdigit() or dimension == None or int(dimension) < 100 or int(dimension) > 500:
-        app.showMessage('Invalid dimension. Please enter a value between 100-500.')
+    if not dimension.isdigit() or dimension == None or int(dimension) < 100 or int(dimension) > 6000:
+        app.showMessage('Invalid dimension. Please enter a value between 100-600cm.')
         return False
     return True
 
 def isValidHeight(app, dimension):
-    if not dimension.isdigit() or dimension == None or int(dimension) < 6 or int(dimension) > 35:
-        app.showMessage('Invalid dimension. Please enter a value between 0-10!')
+    if not dimension.isdigit() or dimension == None or int(dimension) < 150 or int(dimension) > 1000:
+        app.showMessage('Invalid dimension. Please enter a value between 150-1000cm!')
         return False
     return True
 
@@ -17,8 +17,6 @@ def hasAllParametersSet(app):
         return app.building.name and app.building.location and app.buidling.height
     return False
 
-def castCmToMeter(app, dimension):
-    return dimension * 100
 
 def calculateSharedWallArea(room1, room2):
     """
@@ -44,7 +42,6 @@ def calculateSharedWallArea(room1, room2):
     else:
         return 0
 
-    
 def cmToMeter(cm):
     return cm/100
 
@@ -94,7 +91,7 @@ class Gallery:
         self.padding = 50
         self.width = 200
         self.length = 200
-        self.top = 700
+        self.top = 750
     
     def updateProjectCount(self):
         self.projectCount = len(self.items) # num
@@ -114,7 +111,7 @@ class Gallery:
             cx, cy = center
             drawLabel(currBuilding.name, cx, cy+120, fill = app.secondFill, bold = True, size = 16)
             drawLabel(currBuilding.location, cx, cy+140, fill = app.secondFill, size = 12)
-            drawLabel(f'{currBuilding.annualHeatLoss} MMBTU', cx, cy+155, fill = app.secondFill, size = 12)
+            drawLabel(f'{currBuilding.annualHeatLoss} kWh/year', cx, cy+155, fill = app.secondFill, size = 12)
     
     def mouseOver(self,i):
         self.updateProjectCount()
