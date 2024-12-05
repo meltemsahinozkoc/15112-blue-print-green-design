@@ -1,17 +1,14 @@
 from cmu_graphics import *
 from utils import *
 
-########################################################
-# BUILDING 
-########################################################
 class Building:
     def __init__(self, length, width, height):
         self.length = length
         self.width = width
         self.height = height
 
-        self.scaledWidth = self.width * 0.1
-        self.scaledLength = self.length * 0.1
+        self.scaledWidth = self.width * app.scaleFactor
+        self.scaledLength = self.length * app.scaleFactor
 
         self.name = f'Project {(len(app.gallery.items)) + 1}'
         self.location = 'Unknown Location'
@@ -74,28 +71,25 @@ class Building:
         textSize = 12
         lineW = 1
         lineArrowDist = 5
-        scaleFactor = 0.1
-        scaledWidth = self.width * scaleFactor
-        scaledLength = self.length * scaleFactor
 
         # horizontal measure line
-        drawLine((app.width/2 - scaledWidth/2), (app.height/2 - scaledLength/2) - paddingDist,
-                 (app.width/2 + scaledWidth/2), (app.height/2 - scaledLength/2) - paddingDist, fill=app.secondFill, lineWidth=lineW)
-        drawLine((app.width/2 - scaledWidth/2), (app.height/2 - scaledLength/2) - paddingDist - lineArrowDist,
-                 (app.width/2 - scaledWidth/2), (app.height/2 - scaledLength/2) - paddingDist + lineArrowDist, fill=app.secondFill, lineWidth=lineW)
-        drawLine((app.width/2 + scaledWidth/2), (app.height/2 - scaledLength/2) - paddingDist - lineArrowDist,
-                 (app.width/2 + scaledWidth/2), (app.height/2 - scaledLength/2) - paddingDist + lineArrowDist, fill=app.secondFill, lineWidth=lineW)
+        drawLine((app.width/2 - self.scaledWidth/2), (app.height/2 - self.scaledLength/2) - paddingDist,
+                 (app.width/2 + self.scaledWidth/2), (app.height/2 - self.scaledLength/2) - paddingDist, fill=app.secondFill, lineWidth=lineW)
+        drawLine((app.width/2 - self.scaledWidth/2), (app.height/2 - self.scaledLength/2) - paddingDist - lineArrowDist,
+                 (app.width/2 - self.scaledWidth/2), (app.height/2 - self.scaledLength/2) - paddingDist + lineArrowDist, fill=app.secondFill, lineWidth=lineW)
+        drawLine((app.width/2 + self.scaledWidth/2), (app.height/2 - self.scaledLength/2) - paddingDist - lineArrowDist,
+                 (app.width/2 + self.scaledWidth/2), (app.height/2 - self.scaledLength/2) - paddingDist + lineArrowDist, fill=app.secondFill, lineWidth=lineW)
         
         # vertical measure line
-        drawLine((app.width/2 + scaledWidth/2) + paddingDist, (app.height/2 - scaledLength/2),
-                 (app.width/2 + scaledWidth/2) + paddingDist, (app.height/2 + scaledLength/2), fill=app.secondFill, lineWidth=lineW)
-        drawLine((app.width/2 + scaledWidth/2) + paddingDist - lineArrowDist, (app.height/2 - scaledLength/2),
-                 (app.width/2 + scaledWidth/2) + paddingDist + lineArrowDist, (app.height/2 - scaledLength/2), fill=app.secondFill, lineWidth=lineW)
-        drawLine((app.width/2 + scaledWidth/2) + paddingDist - lineArrowDist, (app.height/2 + scaledLength/2),
-                 (app.width/2 + scaledWidth/2) + paddingDist + lineArrowDist, (app.height/2 + scaledLength/2), fill=app.secondFill, lineWidth=lineW)
+        drawLine((app.width/2 + self.scaledWidth/2) + paddingDist, (app.height/2 - self.scaledLength/2),
+                 (app.width/2 + self.scaledWidth/2) + paddingDist, (app.height/2 + self.scaledLength/2), fill=app.secondFill, lineWidth=lineW)
+        drawLine((app.width/2 + self.scaledWidth/2) + paddingDist - lineArrowDist, (app.height/2 - self.scaledLength/2),
+                 (app.width/2 + self.scaledWidth/2) + paddingDist + lineArrowDist, (app.height/2 - self.scaledLength/2), fill=app.secondFill, lineWidth=lineW)
+        drawLine((app.width/2 + self.scaledWidth/2) + paddingDist - lineArrowDist, (app.height/2 + self.scaledLength/2),
+                 (app.width/2 + self.scaledWidth/2) + paddingDist + lineArrowDist, (app.height/2 + self.scaledLength/2), fill=app.secondFill, lineWidth=lineW)
         
-        drawLabel(f'{self.width} cm', app.width/2, (app.height/2 - scaledLength/2 - textDist), size=textSize, fill=app.secondFill)
-        drawLabel(f'{self.length} cm', (app.width/2 + scaledWidth/2 + textDist*1.5), app.height/2, size=textSize, fill=app.secondFill)
+        drawLabel(f'{self.width} cm', app.width/2, (app.height/2 - self.scaledLength/2 - textDist), size=textSize, fill=app.secondFill)
+        drawLabel(f'{self.length} cm', (app.width/2 + self.scaledWidth/2 + textDist*1.5), app.height/2, size=textSize, fill=app.secondFill)
 
     
     def __repr__(self):
@@ -120,7 +114,7 @@ class Building:
         Returns:
         - float: Heat loss from infiltration in W/m^3K.
 
-        Unit: W/m^3K
+        Unit: W/K
         """
         ACH = 1.0 # number of air changes per hour
         heatCapacityAir = 1.059 # W/m^3K
@@ -138,23 +132,32 @@ class Building:
 
         Unit: W/K
         """
-
+        totalWindowArea = 0
         for window in self.windows:
-            self.totalWindowArea = window.calculateArea()
+            totalWindowArea += window.calculateArea() # m^2
+            self.totalWindowArea = totalWindowArea
+        totalDoorArea = 0
         for door in self.doors:
-            self.totalDoorArea = door.calculateArea()
+            totalDoorArea += door.calculateArea()
+            self.totalDoorArea = totalDoorArea
+        totalWallArea = 0
         for wall in self.walls:
-            self.totalWallArea = wall.calculateArea()
+            totalWallArea += wall.calculateArea()
+            self.totalWallArea = totalWallArea
+        totalFloorArea = 0
         for floor in self.floors:
-            self.totalFloorArea = floor.calculateArea()
+            totalFloorArea = floor.calculateArea()
+            self.totalFloorArea = totalFloorArea
+        totalRoofArea = 0
         for roof in self.roofs:
-            self.totalRoofArea = roof.calculateArea()
+            totalRoofArea = roof.calculateArea()
+            self.totalRoofArea = totalRoofArea
 
         # heat loss between heated-unheated rooms
         sharedWallArea = 0
         for room in app.building.rooms:
             for otherRoom in app.building.rooms:
-                sharedWallArea += calculateSharedWallArea(room, otherRoom)
+                sharedWallArea += calculateSharedWallArea(room, otherRoom) # m^2
                 self.totalSharedWallArea = sharedWallArea
             
         # U-value calculation - W/m^2K
@@ -163,35 +166,35 @@ class Building:
         elif not isinstance(self.wallsRValue, list):
             wallsUValue = 1/self.wallsRValue
         else:
-            wallsUValue = 0.2 # dafault value
+            wallsUValue = 1.0 # dafault value
         
         if isinstance(self.windowsRValue, list) and len(self.windowsRValue) != 0:
             windowsUValue = 1/sum(self.windowsRValue)
         elif not isinstance(self.windowsRValue, list) and self.windowsRValue != 0:
             windowsUValue = 1/self.windowsRValue
         else:
-            windowsUValue = 1.5
+            windowsUValue = 5.8
 
         if isinstance(self.doorsRValue, list) and len(self.doorsRValue) != 0:
             doorsUValue = 1/sum(self.doorsRValue)
         elif not isinstance(self.doorsRValue, list) and self.doorsRValue != 0:
             doorsUValue = 1/self.doorsRValue
         else:
-            doorsUValue = 1.2
+            doorsUValue = 4.0
 
         if isinstance(self.floorsRValue, list) and len(self.floorsRValue) != 0:
             floorsUValue = 1/sum(self.floorsRValue)
         elif not isinstance(self.floorsRValue, list) and self.floorsRValue != 0:
             floorsUValue = 1/self.floorsRValue
         else:
-            floorsUValue = 0.2
+            floorsUValue = 1.5
 
         if isinstance(self.roofsRValue, list) and len(self.roofsRValue) != 0:
             roofsUValue = 1/sum(self.roofsRValue)
         elif not isinstance(self.roofsRValue, list) and self.roofsRValue != 0:
             roofsUValue = 1/self.roofsRValue
         else:
-            roofsUValue = 0.15
+            roofsUValue = 1.0
 
         self.totalWindowUA = pythonRound((self.totalWindowArea * windowsUValue),2)
         self.totalDoorUA = pythonRound((self.totalDoorArea * doorsUValue),2)
@@ -221,22 +224,18 @@ class Building:
 
     def calculateAnnualHeatLoss(self):
         """
-        Calculates the annual heat loss for the building based on heating degree days.
+        Calculates the site EUI with annual heat loss for the building based on heating degree days.
 
         Returns:
         - float: Annual heat loss in kWh/year.
 
-        Unit: kWh/year
+        Unit: kWh/year.m^2
         """
         # Convert Watt to kWh
         heatLossCoefficient = self.calculateTotalHeatLossCoefficient() # W/K
-        self.annualHeatLoss = pythonRound((WToKw(heatLossCoefficient * 24 * app.heatingDegreeDays65F)),2) # kWh/year
-        return self.annualHeatLoss
+        self.annualHeatLoss = WToKw(pythonRound((heatLossCoefficient * 24 * app.heatingDegreeDays65F / cm2ToMeter2(self.length*self.width)),2))
+        return self.annualHeatLoss 
     
-
-########################################################
-# ROOM 
-########################################################
 
 class Room:
     def __init__(self, x, y, width, height, name, isHeated):
@@ -263,27 +262,12 @@ class Room:
         drawCircle(self.x+self.width, self.y+self.height, 5, fill = 'red')
 
 
-########################################################
-# BUILDING COMPONENT 
-########################################################
-
 class BuildingComponent:
     def __init__(self, length, height, uValue): 
         self.length = length
         self.height = height
         self.uValue = None # not needed?
-        self.rValue = self.calculateRValue() # not needed?
-
-        self.thermalColor = app.secondFill
-        # gradient -> based on the heat loss
-        # if self.rValue * self.calculateArea() > 100:
-        #     self.thermalColor = gradient('red','orange', start = 'left-bottom')
-        # elif self.rValue * self.calculateArea() > 50:
-        #     self.thermalColor = gradient('orange','yellow', start = 'left-bottom')
-        # elif self.rValue * self.calculateArea() > 25:
-        #     self.thermalColor = gradient('yellow','green', start = 'left-bottom')
-        # else:
-        #     self.thermalColor = 'gray'
+        self.rValue = self.calculateRValue() # not needed?    
 
     def calculateArea(self):
         return pythonRound(cm2ToMeter2(self.length * self.height),2)

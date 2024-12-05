@@ -42,7 +42,7 @@ def draw1DrawScreen(app):
     drawLabel(f'PROJECT NAME: {app.building.name}', 25, 125, size=app.textSize, fill=app.secondFill, bold=True, font=app.font, align='left')
     drawLabel(f'LOCATION: {app.building.location}', 25, 150, size=app.textSize, fill=app.secondFill, bold=True, font=app.font, align='left')
     drawLabel(f'HEATING DEGREE DAYS: {app.heatingDegreeDays65F}', 25, 175, size=app.textSize, fill=app.secondFill, bold=True, font=app.font, align='left')
-    drawLabel(f'ANNUAL HEAT LOSS: {app.building.annualHeatLoss} kWh/year', 25, 200, size=app.textSize, fill=app.secondFill, bold=True, font=app.font, align='left')
+    drawLabel(f'SITE EUI: {app.building.annualHeatLoss} kWh/m²/year', 25, 200, size=app.textSize, fill=app.secondFill, bold=True, font=app.font, align='left')
 
     drawLabel('+ TIP 1: Start with the Project Name and follow the numbers!', 25, app.height-175, size=app.textSize, fill=app.secondFill, font=app.font, align='left', italic=True, bold=True)
     drawLabel('+ TIP 2: Press S to recalculate the annual heat loss!', 25, app.height-150, size=app.textSize, fill=app.secondFill, font=app.font, align='left', italic=True, bold=True)
@@ -51,11 +51,11 @@ def draw1DrawScreen(app):
 
 
     if app.building.annualHeatLoss != 'Unknown':
-        if app.building.annualHeatLoss > 15000:
+        if app.building.annualHeatLoss > 250:
             app.building.thermalColor = gradient('red','orange', start = 'left-bottom')
-        elif app.building.annualHeatLoss > 10000:
+        elif app.building.annualHeatLoss > 150:
             app.building.thermalColor = gradient('orange','yellow', start = 'left-bottom')
-        elif app.building.annualHeatLoss > 5000:
+        elif app.building.annualHeatLoss > 0:
             app.building.thermalColor = gradient('yellow','green', start = 'left-bottom')
         else:
             app.building.thermalColor = 'gray'
@@ -88,6 +88,7 @@ def drawDetailWallsScreen(app):
     buttonsMiddle.draw()
 
     app.dropdownMenu.draw()
+    app.dropdownMenu.handleHover()
     
     drawLabel(f'Wall layers: {app.building.wallsLayers}', 25, app.height-100, size=app.textSizeSmall, fill=app.secondFill, font=app.font, align='left', bold = True)
     drawLabel(f'Wall layers R-Values: {app.building.wallsRValue}', 25, app.height-75, size=app.textSizeSmall, fill=app.secondFill, font=app.font, align='left', bold = True)
@@ -113,6 +114,7 @@ def drawDetailWindowsScreen(app):
     buttonsMiddle.draw()
 
     app.dropdownMenu.draw()
+    app.dropdownMenu.handleHover()
 
        
     drawLabel(f'Window layers: {app.building.windowsLayers}', 25, app.height-100, size=app.textSizeSmall, fill=app.secondFill, font=app.font, align='left', bold = True)
@@ -139,6 +141,7 @@ def drawDetailDoorsScreen(app):
     
 
     app.dropdownMenu.draw()
+    app.dropdownMenu.handleHover()
 
     drawLabel(f'Door layers: {app.building.doorsLayers}', 25, app.height-100, size=app.textSizeSmall, fill=app.secondFill, font=app.font, align='left', bold = True)
     drawLabel(f'Door layers R-Values: {app.building.doorsRValue}', 25, app.height-75, size=app.textSizeSmall, fill=app.secondFill, font=app.font, align='left', bold = True)
@@ -164,6 +167,7 @@ def drawDetailFloorsScreen(app):
     buttonsMiddle.draw()
 
     app.dropdownMenu.draw()
+    app.dropdownMenu.handleHover()
 
     drawLabel(f'Floor layers: {app.building.floorsLayers}', 25, app.height-100, size=app.textSizeSmall, fill=app.secondFill, font=app.font, align='left', bold = True)
     drawLabel(f'Floor layers R-Values: {app.building.floorsRValue}', 25, app.height-75, size=app.textSizeSmall, fill=app.secondFill, font=app.font, align='left', bold = True)
@@ -189,6 +193,7 @@ def drawDetailRoofsScreen(app):
     buttonsMiddle.draw()
 
     app.dropdownMenu.draw()
+    app.dropdownMenu.handleHover()
     
     drawLabel(f'Roof layers: {app.building.roofsLayers}', 25, app.height-100, size=app.textSizeSmall, fill=app.secondFill, font=app.font, align='left', bold = True)
     drawLabel(f'Roof layers R-Values: {app.building.roofsRValue}', 25, app.height-75, size=app.textSizeSmall, fill=app.secondFill, font=app.font, align='left', bold = True)
@@ -250,16 +255,16 @@ def draw3CalculateScreen(app):
         drawLabel(suggestionDict[secondBiggestLossName], app.width/2, app.height-250, size=app.textSize, fill=app.secondFill, font=app.font, italic=True)
 
         if app.building.annualHeatLoss != None:
-            if app.building.annualHeatLoss > 15000:
+            if app.building.annualHeatLoss > 250:
                 isExcellent = 'POOR'
-            elif app.building.annualHeatLoss > 10000:
+            elif app.building.annualHeatLoss > 150:
                 isExcellent = 'MODERATE'
-            elif app.building.annualHeatLoss > 5000:
+            elif app.building.annualHeatLoss > 0:
                 isExcellent = 'GOOD'
             else:
                 isExcellent = 'EXCELLENT'
         
-        drawLabel(f'- ANNUAL HEAT LOSS: {isExcellent} with {app.building.annualHeatLoss} kWh/year', app.width/2, app.height-200, size=app.textSize, fill=app.secondFill, bold=True, font=app.font)
+        drawLabel(f'- SITE EUI: {isExcellent} with {app.building.annualHeatLoss} kWh/m²/year', app.width/2, app.height-200, size=app.textSize, fill=app.secondFill, bold=True, font=app.font)
 
         drawLabel('[PRESS 1 TO SEE THE THERMAL VISUALIZATION]', app.width/2, app.height-100, size=app.textSize, fill=app.secondFill, font=app.font, italic=True, bold = True)
 

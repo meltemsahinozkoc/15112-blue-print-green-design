@@ -1,8 +1,8 @@
 from cmu_graphics import *
 
 def isValidDimension(app, dimension):
-    if not dimension.isdigit() or dimension == None or int(dimension) < 100 or int(dimension) > 6000:
-        app.showMessage('Invalid dimension. Please enter a value between 100-600cm.')
+    if not dimension.isdigit() or dimension == None or int(dimension) < 500 or int(dimension) > 6000:
+        app.showMessage('Invalid dimension. Please enter a value between 500-6000cm.')
         return False
     return True
 
@@ -28,6 +28,8 @@ def calculateSharedWallArea(room1, room2):
 
     Returns:
     - float: Shared wall area between UNHEATED rooms in square meters
+
+    Unit: m^2
     """
     if room1.isHeated == room2.isHeated:
         return 0
@@ -125,10 +127,6 @@ def navigateBack(app):
         app.pageHistory.pop()
         app.screen = app.pageHistory[-1]
 
-def navigateForward(app):
-    pass
-
-
 class dropdownMenu:
     def __init__(self, items, x, y, width, height, buttonWidth, buttonHeight):
         self.items = items
@@ -142,11 +140,14 @@ class dropdownMenu:
         self.currStartIdx = 0
         self.elementsPerPage = 6
 
+        self.isHovered = [False]*len(self.items)
+
     def draw(self):
         currPageItems = self.items[self.currStartIdx:self.currStartIdx+self.elementsPerPage]
         for i in range(len(currPageItems)):
+            fill = 'gray' if self.isHovered[i] else app.secondFill
             item = currPageItems[i]
-            drawRect(self.x, self.y + i*self.buttonHeight, self.buttonWidth, self.buttonHeight, fill=app.secondFill, border=app.secondFill, borderWidth=1, opacity = 20)
+            drawRect(self.x, self.y + i*self.buttonHeight, self.buttonWidth, self.buttonHeight, fill=fill, border=app.secondFill, borderWidth=1, opacity = 20)
             drawLabel(item['Material'], self.x + self.buttonWidth/2, self.y + i*self.buttonHeight + self.buttonHeight/2, fill=app.secondFill, size=app.textSizeSmall, font=app.font, align='center', bold = True)
         
         # navi buttons
@@ -192,6 +193,15 @@ class dropdownMenu:
                             app.building.roofsLayers.append(currPageItems[i]['Material'])
                             app.building.roofsRValue.append(itemRValue)
 
+    def handleHover(self):
+        currPageItems = self.items[self.currStartIdx:self.currStartIdx+self.elementsPerPage]
+        for i in range(len(currPageItems)):
+            if (self.x <= app.hx <= self.x + self.buttonWidth and
+                    self.y + i * self.buttonHeight <= app.hy <= self.y + (i + 1) * self.buttonHeight):
+                self.isHovered[i] = True
+            else:
+                self.isHovered[i] = False
+                
 class TableCol:
     def __init__(self, items, x, y, width, height, rowWidth, rowHeight):
         self.items = items
@@ -210,33 +220,3 @@ class TableCol:
             item = self.items[i]
             drawRect(self.x, self.y + i*self.rowHeight, self.rowWidth, self.rowHeight, fill=None, border=app.secondFill, borderWidth=1)
             drawLabel(item, self.x + self.rowWidth/2, self.y + i*self.rowHeight + self.rowHeight/2, fill=app.secondFill, size=app.textSize, font=app.font, align='center', bold = True)
-
-# class Icon:
-#     def __init__(self, r, origin, name=None, lineColor=app.secondFill, lineWidth=1):
-#         self.r = r
-#         self.origin = origin
-#         self.name = name
-#         self.lineColor = lineColor
-#         self.lineWidth = lineWidth
-    
-#     def draw(self, app):
-#         lineColor, fillColor = app.secondFill
-#         cx, cy = self.origin
-#         r = self.r
-#         if self.name == 'Forward Arrow':
-#             drawLabel(cx,cy-r, text='→', fill=lineColor, 
-#                                         font=app.font)
-#             drawLabel(cx,cy+r, text='F', fill=lineColor, 
-#                                         font=app.font)
-#         elif self.name == 'Backward Arrow':
-#             drawLabel(cx,cy-r, text='←', fill=lineColor, 
-#                                         font=app.font)
-#             drawLabel(cx,cy+r, text='B', fill=lineColor, 
-#                                         font=app.font)
-        
-#         elif self.name == 'Help':
-#             drawLabel(cx,cy, text='?', fill=lineColor, 
-#                                         font=app.font)
-#             drawCircle(cx,cy,r, fill=fillColor, border=lineColor, borderWidth=self.lineWidth)
-#         elif self.name == 'Save':
-#             pass

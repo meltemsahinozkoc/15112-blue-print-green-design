@@ -12,6 +12,7 @@ def onAppStart(app):
     app.textSizeHead = 24
     app.textSize = 16
     app.textSizeSmall = 12
+    app.scaleFactor = 0.1
 
     app.currentComponent = None
     app.thermalData = fetchFilteredThermalData()
@@ -38,7 +39,7 @@ def reset(app):
 def initilaizeBuilding(app):
     stdWallHeight = 250
     app.building = Building(2000,2000,stdWallHeight) # default building
-    app.heatingDegreeDays65F = 5340 # default HDD
+    app.heatingDegreeDays65F = 3200 # default HDD
 
     app.addWindow = False
     app.addDoor = False
@@ -47,7 +48,7 @@ def initilaizeBuilding(app):
     app.roomY = None
 
     stdWallWidth = 25
-    stdWallUValue = 0.2
+    stdWallUValue = 1.0
     w0 = Wall(app.building.width, app.building.height, stdWallWidth, stdWallUValue, app.width/2-app.building.width/2, app.height/2-app.building.height/2) # top wall, left point
     w1 = Wall(app.building.length, app.building.height, stdWallWidth, stdWallUValue, app.width/2+app.building.width/2, app.height/2-app.building.height/2) # right wall, top point
     w2 = Wall(app.building.width, app.building.height, stdWallWidth, stdWallUValue, app.width/2-app.building.width/2, app.height/2+app.building.height/2) # bottom wall, left point
@@ -55,7 +56,7 @@ def initilaizeBuilding(app):
     app.building.walls = [w0,w1,w2,w3]
 
     stdFloorHeigth = 15 # thickness
-    stdFloorUValue = 0.2
+    stdFloorUValue = 1.5
     stdRoofHeigth = 20
     stdRoofUValue = 0.15
     floor = Floor(app.building.length, stdFloorHeigth, app.building.width, stdFloorUValue)
@@ -186,6 +187,7 @@ def onKeyPress(app, key):
         print(f'totalWallArea: {app.building.totalWallArea}')
         print(f'totalFloorArea: {app.building.totalFloorArea}')
         print(f'totalRoofArea: {app.building.totalRoofArea}')
+        print(f'sharedWallArea: {app.building.totalSharedWallArea}')
         
         print('\n')
         
@@ -302,15 +304,17 @@ def handleClickDrawScreen(app, mouseX, mouseY):
         elif mouseX > 3*app.width/5 and mouseX < 4*app.width/5:
             inputHeight = app.getTextInput('Enter building height (Between 100-1000cm): ')
             if isValidHeight(app, inputHeight):
-                app.building.height = int(inputHeight)
-            
+                app.building.height = int(inputHeight)                
         elif mouseX > 4*app.width/5:
-            inputLength = app.getTextInput('Enter building length (Between 100-6000cm): ')
+            inputLength = app.getTextInput('Enter building length (Between 500-6000cm): ')
             if isValidDimension(app, inputLength):
                 app.building.length= int(inputLength)
-            inputWidth = app.getTextInput('Enter building width (Between 100-6000cm): ')
+                app.building.scaledLength = app.building.length * app.scaleFactor
+
+            inputWidth = app.getTextInput('Enter building width (Between 500-6000cm): ')
             if isValidDimension(app, inputWidth):
                 app.building.width = int(inputWidth)
+                app.building.scaledWidth = app.building.width * app.scaleFactor
             if isValidDimension(app, inputLength) and isValidDimension(app, inputWidth):
                 stdWallWidth = 25
                 stdWallUValue = 0.2
@@ -324,7 +328,7 @@ def handleClickDrawScreen(app, mouseX, mouseY):
                 stdFloorUValue = 0.2
 
                 stdRoofHeigth = 20
-                stdRoofUValue = 0.15
+                stdRoofUValue = 1.0
                 floor = Floor(app.building.length, stdFloorHeigth, app.building.width, stdFloorUValue)
                 roof = Roof(app.building.length, stdRoofHeigth, app.building.width, stdRoofUValue)
                 app.building.floors = [floor]
@@ -351,17 +355,17 @@ def handleClickDrawScreen(app, mouseX, mouseY):
     if isMouseClickOnTheWall(app):
         snappedX, snappedY = snapToWall(app, mouseX, mouseY)
         if app.addWindow:
-            stdWindowLenght = 40
-            stdWindowHeight = 60
-            stdWindowUValue = 2
+            stdWindowLenght = 60
+            stdWindowHeight = 90
+            stdWindowUValue = 5.8
             newWindow = Window(stdWindowLenght,stdWindowHeight,stdWindowUValue, snappedX, snappedY)
             app.building.windows.append(newWindow)
             newWindow.type = classifyComponentAllignment(app)
 
         if app.addDoor:
-            stdDoorLength = 60
-            stdDoorHeight = 180
-            stdDoorUValue = 2
+            stdDoorLength = 80
+            stdDoorHeight = 210
+            stdDoorUValue = 4.0
             newDoor = Door(stdDoorLength,stdDoorHeight,stdDoorUValue, snappedX, snappedY)
             app.building.doors.append(newDoor)
             newDoor.type = classifyComponentAllignment(app)
@@ -436,8 +440,8 @@ def handleClickDrawScreen(app, mouseX, mouseY):
 def isMouseClickOnTheWall(app): # T/F
     wallWidth = 15
 
-    halfLength = app.building.scaledLength/2
-    halfWidth = app.building.scaledWidth/2
+    halfLength = (app.building.scaledLength)/2
+    halfWidth = (app.building.scaledWidth)/2
 
     outerLeft = app.width/2 - halfWidth
     outerRight = app.width/2 + halfWidth
@@ -463,28 +467,28 @@ def snapToWall(app, xCoor, yCoor):
         xCoor = buildingLeft
     elif abs(xCoor - buildingRight) < margin:
         xCoor = buildingRight
-
     if abs(yCoor - buildingTop) < margin:
         yCoor = buildingTop
     elif abs(yCoor - buildingBottom) < margin:
         yCoor = buildingBottom
     return xCoor, yCoor
 
+
 def isMouseClickNearWall(app):
     margin = 10
     
-    offsetLeft = app.width/2 - app.building.scaledWidth/2 - margin
-    offsetRight = app.width/2 + app.building.scaledWidth/2 + margin
-    offsetTop = app.height/2 - app.building.scaledLength/2 - margin
-    offsetBottom = app.height/2 + app.building.scaledLength/2 + margin
+    offsetLeft = app.width/2 - (app.building.scaledWidth)/2 - margin
+    offsetRight = app.width/2 + (app.building.scaledWidth)/2 + margin
+    offsetTop = app.height/2 - (app.building.scaledLength)/2 - margin
+    offsetBottom = app.height/2 + (app.building.scaledLength)/2 + margin
 
     return (offsetLeft <= app.cx <= offsetRight and offsetTop <= app.cy <= offsetBottom)
 
 def classifyComponentAllignment(app): # vertical, horizontal, None
     wallWidth = 15
 
-    halfLength = app.building.scaledLength/2
-    halfWidth = app.building.scaledWidth/2
+    halfLength = (app.building.scaledLength)/2
+    halfWidth = (app.building.scaledWidth)/2
 
     innerLeft = app.width/2 - halfWidth + wallWidth
     innerRight = app.width/2 + halfWidth - wallWidth
