@@ -39,7 +39,7 @@ def reset(app):
 def initilaizeBuilding(app):
     stdWallHeight = 250
     app.building = Building(2000,2000,stdWallHeight) # default building
-    app.heatingDegreeDays65F = 3200 # default HDD
+    app.heatingDegreeDays65F = 1500 # default HDD
 
     app.addWindow = False
     app.addDoor = False
@@ -425,7 +425,6 @@ def handleClickDrawScreen(app, mouseX, mouseY):
         elif mouseX > 4*app.width/5:
             app.screen = 'detail'
             
-        
     # bottom buttons
     if mouseY > app.height-50:
         if mouseX > 0 and mouseX < app.width/3:
