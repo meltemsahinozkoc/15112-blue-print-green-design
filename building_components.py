@@ -12,7 +12,7 @@ class Building:
 
         self.name = f'Project {(len(app.gallery.items)) + 1}'
         self.location = 'Unknown Location'
-        self.annualHeatLoss = 'Unknown'
+        self.siteEUI = 'Unknown'
         self.infiltrationLoss = None
 
         self.walls = []
@@ -222,7 +222,7 @@ class Building:
         return {'windowUA%': windowRatio, 'doorUA%': doorRatio, 'wallUA%': wallRatio, 'floorUA%': floorRatio, 'roofUA%': roofRatio, 'infiltrationUA%': infiltrationRatio}
 
 
-    def calculateAnnualHeatLoss(self):
+    def calculateSiteEUI(self):
         """
         Calculates the site EUI with annual heat loss for the building based on heating degree days.
 
@@ -231,10 +231,10 @@ class Building:
 
         Unit: kWh/year.m^2
         """
-        # Convert Watt to kWh
+        # convert Watt to kWh
         heatLossCoefficient = self.calculateTotalHeatLossCoefficient() # W/K
-        self.annualHeatLoss = WToKw(pythonRound((heatLossCoefficient * 24 * app.heatingDegreeDays65F / cm2ToMeter2(self.length*self.width)),2))
-        return self.annualHeatLoss 
+        self.siteEUI = WToKw(pythonRound((heatLossCoefficient * 24 * app.heatingDegreeDays65F / cm2ToMeter2(self.length*self.width)),2))
+        return self.siteEUI
     
 
 class Room:
@@ -245,6 +245,8 @@ class Room:
         self.height = height
         self.name = name
         self.isHeated = isHeated
+
+        self.thermalColor = app.secondFill
 
     def draw(self):
         color = 'lightSalmon' if self.isHeated else 'lightGray'
@@ -257,22 +259,38 @@ class Room:
         heatingSituation = 'HEATED' if self.isHeated else 'NOT HEATED'
         drawLabel(heatingSituation, self.x + self.width / 2, self.y + self.height / 2 + 5, size=app.textSizeSmall-2, fill = 'black', font = app.font, align = 'center')
 
-    def drawClickPoints(self):
-        drawCircle(self.x, self.y, 5, fill = 'red')
-        drawCircle(self.x+self.width, self.y+self.height, 5, fill = 'red')
+        for room in app.building.rooms:
+            for otherRoom in app.building.rooms:
+                sharedWallCoords = detectSharedWallCoordines(room, otherRoom)
+                if sharedWallCoords != None:
+                    if sharedWallCoords['direction'] == 'vertical':
+                        drawLine(sharedWallCoords['x'], sharedWallCoords['yStart'], sharedWallCoords['x'], sharedWallCoords['yEnd'], fill = self.thermalColor, lineWidth = 15/2)
+                    elif sharedWallCoords['direction'] == 'horizontal':
+                        drawLine(sharedWallCoords['xStart'], sharedWallCoords['y'], sharedWallCoords['xEnd'], sharedWallCoords['y'], fill = self.thermalColor, lineWidth = 15/2)
 
+
+    def calculateSharedWallHeatLoss(self):
+        if isinstance(app.building.wallsRValue, list) and sum(app.building.wallsRValue) != 0:
+            wallsUValue = 1/sum(app.building.wallsRValue)
+        elif not isinstance(app.building.wallsRValue, list):
+            wallsUValue = 1/app.building.wallsRValue
+        else:
+            wallsUValue = 1.0 
+
+        return wallsUValue * app.building.totalSharedWallArea
+        
 
 class BuildingComponent:
     def __init__(self, length, height, uValue): 
         self.length = length
         self.height = height
-        self.uValue = None # not needed?
-        self.rValue = self.calculateRValue() # not needed?    
+        self.uValue = None 
+        self.rValue = self.calculateRValue()
 
     def calculateArea(self):
         return pythonRound(cm2ToMeter2(self.length * self.height),2)
 
-    def calculateRValue(self): # not needed?
+    def calculateRValue(self):
         return None if self.uValue is None else 1 / self.uValue
 
     def setMaterial(self, material):
@@ -294,16 +312,17 @@ class Window(BuildingComponent):
         self.cy = cy
     
     def draw(self):
+        scaledLength = self.length*app.scaleFactor
         if self.type == 'verticalLeft' or self.type == 'verticalRight':
-            drawRect(self.cx, self.cy, 15, self.length, fill = app.fill, align = 'center')
-            drawLine(self.cx-2.5, self.cy - self.length/2, self.cx-2.5, self.cy + self.length/2, fill = app.secondFill, lineWidth = 1)
-            drawLine(self.cx, self.cy - self.length/2, self.cx, self.cy + self.length/2, fill = app.secondFill, lineWidth = 1)
-            drawLine(self.cx+2.5, self.cy - self.length/2, self.cx+2.5, self.cy + self.length/2, fill = app.secondFill, lineWidth = 1)
+            drawRect(self.cx, self.cy, 15, scaledLength, fill = app.fill, align = 'center')
+            drawLine(self.cx-2.5, self.cy - scaledLength/2, self.cx-2.5, self.cy + scaledLength/2, fill = app.secondFill, lineWidth = 1)
+            drawLine(self.cx, self.cy - scaledLength/2, self.cx, self.cy + scaledLength/2, fill = app.secondFill, lineWidth = 1)
+            drawLine(self.cx+2.5, self.cy - scaledLength/2, self.cx+2.5, self.cy + scaledLength/2, fill = app.secondFill, lineWidth = 1)
         elif self.type == 'horizontalTop' or self.type == 'horizontalBottom':
-            drawRect(self.cx, self.cy, self.length, 15, fill = app.fill, align = 'center')
-            drawLine(self.cx - self.length/2, self.cy-2.5, self.cx + self.length/2, self.cy-2.5, fill = app.secondFill, lineWidth = 1)
-            drawLine(self.cx - self.length/2, self.cy, self.cx + self.length/2, self.cy, fill = app.secondFill, lineWidth = 1)
-            drawLine(self.cx - self.length/2, self.cy+2.5, self.cx + self.length/2, self.cy+2.5, fill = app.secondFill, lineWidth = 1)
+            drawRect(self.cx, self.cy, scaledLength, 15, fill = app.fill, align = 'center')
+            drawLine(self.cx - scaledLength/2, self.cy-2.5, self.cx + scaledLength/2, self.cy-2.5, fill = app.secondFill, lineWidth = 1)
+            drawLine(self.cx - scaledLength/2, self.cy, self.cx + scaledLength/2, self.cy, fill = app.secondFill, lineWidth = 1)
+            drawLine(self.cx - scaledLength/2, self.cy+2.5, self.cx + scaledLength/2, self.cy+2.5, fill = app.secondFill, lineWidth = 1)
 
 class Door(BuildingComponent):
     def __init__(self, length, height, uValue, cx, cy):
@@ -313,18 +332,19 @@ class Door(BuildingComponent):
         self.cy = cy
 
     def draw(self):
+        scaledLength = self.length*app.scaleFactor
         if self.type == 'verticalLeft':
-            drawRect(self.cx, self.cy, 15, self.length, fill = app.fill, align = 'center')
-            drawLine(self.cx, self.cy - self.length/2, self.cx - self.length/2, self.cy - self.length/2 + self.length/2, fill = app.secondFill, lineWidth = 1)
+            drawRect(self.cx, self.cy, 15, scaledLength, fill = app.fill, align = 'center')
+            drawLine(self.cx, self.cy - scaledLength/2, self.cx - scaledLength/2, self.cy - scaledLength/2 + scaledLength/2, fill = app.secondFill, lineWidth = 1)
         elif self.type == 'horizontalTop':
-            drawRect(self.cx, self.cy, self.length, 15, fill = app.fill, align = 'center')
-            drawLine(self.cx - self.length/2, self.cy, self.cx - self.length/2 + self.length/2,self.cy - self.length/2, fill = app.secondFill, lineWidth = 1)
+            drawRect(self.cx, self.cy, scaledLength, 15, fill = app.fill, align = 'center')
+            drawLine(self.cx - scaledLength/2, self.cy, self.cx - scaledLength/2 + scaledLength/2,self.cy - scaledLength/2, fill = app.secondFill, lineWidth = 1)
         elif self.type == 'verticalRight':
-            drawRect(self.cx, self.cy, 15, self.length, fill = app.fill, align = 'center')
-            drawLine(self.cx, self.cy - self.length/2, self.cx + self.length/2, self.cy - self.length/2 + self.length/2, fill = app.secondFill, lineWidth = 1)
+            drawRect(self.cx, self.cy, 15, scaledLength, fill = app.fill, align = 'center')
+            drawLine(self.cx, self.cy - scaledLength/2, self.cx + scaledLength/2, self.cy - scaledLength/2 + scaledLength/2, fill = app.secondFill, lineWidth = 1)
         elif self.type == 'horizontalBottom':
-            drawRect(self.cx, self.cy, self.length, 15, fill = app.fill, align = 'center')
-            drawLine(self.cx - self.length/2, self.cy, self.cx - self.length/2 + self.length/2,self.cy + self.length/2, fill = app.secondFill, lineWidth = 1)  
+            drawRect(self.cx, self.cy, scaledLength, 15, fill = app.fill, align = 'center')
+            drawLine(self.cx - scaledLength/2, self.cy, self.cx - scaledLength/2 + scaledLength/2,self.cy + scaledLength/2, fill = app.secondFill, lineWidth = 1)  
 
 class Floor(BuildingComponent):
     def __init__(self, length, height, width, uValue):

@@ -1,57 +1,5 @@
 from cmu_graphics import *
 
-def isValidDimension(app, dimension):
-    if not dimension.isdigit() or dimension == None or int(dimension) < 500 or int(dimension) > 6000:
-        app.showMessage('Invalid dimension. Please enter a value between 500-6000cm.')
-        return False
-    return True
-
-def isValidHeight(app, dimension):
-    if not dimension.isdigit() or dimension == None or int(dimension) < 150 or int(dimension) > 1000:
-        app.showMessage('Invalid dimension. Please enter a value between 150-1000cm!')
-        return False
-    return True
-
-def hasAllParametersSet(app):
-    if isValidDimension(app.building.length) and isValidDimension(app.building.width):
-        return app.building.name and app.building.location and app.buidling.height
-    return False
-
-
-def calculateSharedWallArea(room1, room2):
-    """
-    Calculate the shared wall area between two rooms.
-    Only calculates if one room is heated and the other is not.
-
-    Parameters:
-    - room1, room2: Room objects to calculate shared wall area
-
-    Returns:
-    - float: Shared wall area between UNHEATED rooms in square meters
-
-    Unit: m^2
-    """
-    if room1.isHeated == room2.isHeated:
-        return 0
-
-    xOverlap = max(0, min(room1.x + room1.width, room2.x + room2.width) - max(room1.x, room2.x))
-    yOverlap = max(0, min(room1.y + room1.height, room2.y + room2.height) - max(room1.y, room2.y))
-    
-    if xOverlap > 0 and yOverlap < 15/2:
-        return cm2ToMeter2(xOverlap * app.building.height)
-    elif yOverlap > 0 and xOverlap < 15/2:
-        return cm2ToMeter2(yOverlap * app.building.height)
-    else:
-        return 0
-
-def cmToMeter(cm):
-    return cm/100
-
-def cm2ToMeter2(cm2):
-    return cm2/10000
-
-def WToKw(W):
-    return W/1000
 ########################################################
 # UI COMPONENTS 
 ########################################################
@@ -113,7 +61,7 @@ class Gallery:
             cx, cy = center
             drawLabel(currBuilding.name, cx, cy+120, fill = app.secondFill, bold = True, size = 16)
             drawLabel(currBuilding.location, cx, cy+140, fill = app.secondFill, size = 12)
-            drawLabel(f'{currBuilding.annualHeatLoss} kWh/year', cx, cy+155, fill = app.secondFill, size = 12)
+            drawLabel(f'{currBuilding.siteEUI} kWh/year', cx, cy+155, fill = app.secondFill, size = 12)
     
     def mouseOver(self,i):
         self.updateProjectCount()
@@ -220,3 +168,156 @@ class TableCol:
             item = self.items[i]
             drawRect(self.x, self.y + i*self.rowHeight, self.rowWidth, self.rowHeight, fill=None, border=app.secondFill, borderWidth=1)
             drawLabel(item, self.x + self.rowWidth/2, self.y + i*self.rowHeight + self.rowHeight/2, fill=app.secondFill, size=app.textSize, font=app.font, align='center', bold = True)
+
+
+########################################################
+# DATA VALIDATION
+########################################################
+def isValidDimension(app, dimension):
+    if not dimension.isdigit() or dimension == None or int(dimension) < 500 or int(dimension) > 6000:
+        app.showMessage('Invalid dimension. Please enter a value between 500-6000cm.')
+        return False
+    return True
+
+def isValidHeight(app, dimension):
+    if not dimension.isdigit() or dimension == None or int(dimension) < 150 or int(dimension) > 1000:
+        app.showMessage('Invalid dimension. Please enter a value between 150-1000cm!')
+        return False
+    return True
+
+def hasAllParametersSet(app):
+    if isValidDimension(app.building.length) and isValidDimension(app.building.width):
+        return app.building.name and app.building.location and app.buidling.height
+    return False
+
+
+def calculateSharedWallArea(room1, room2):
+    """
+    Calculate the shared wall area between two rooms.
+    Only calculates if one room is heated and the other is not.
+
+    Parameters:
+    - room1, room2: Room objects to calculate shared wall area
+
+    Returns:
+    - float: Shared wall area between UNHEATED rooms in square meters
+
+    Unit: m^2
+    """
+    if room1.isHeated == room2.isHeated:
+        return 0
+
+    xOverlap = max(0, min(room1.x + room1.width, room2.x + room2.width) - max(room1.x, room2.x))
+    yOverlap = max(0, min(room1.y + room1.height, room2.y + room2.height) - max(room1.y, room2.y))
+    
+    if xOverlap > 0 and yOverlap < 15/2:
+        return cm2ToMeter2(xOverlap * app.building.height)
+    elif yOverlap > 0 and xOverlap < 15/2:
+        return cm2ToMeter2(yOverlap * app.building.height)
+    else:
+        return 0
+    
+def detectSharedWallCoordines(room1, room2):
+    if room1.isHeated == room2.isHeated:
+        return None
+    else:
+        margin = 15/4
+        xOverlapStart = max(room1.x, room2.x)
+        xOverlapEnd = min(room1.x + room1.width, room2.x + room2.width)
+        yOverlapStart = max(room1.y, room2.y)
+        yOverlapEnd = min(room1.y + room1.height, room2.y + room2.height)
+        
+        # vertical
+        if yOverlapStart < yOverlapEnd and abs(xOverlapEnd - xOverlapStart) < margin*2:
+            sharedWallCoords = {
+                "direction": "vertical",
+                "x": xOverlapEnd - margin,
+                "yStart": yOverlapStart,
+                "yEnd": yOverlapEnd
+            }
+            return sharedWallCoords
+
+        # horizontal
+        if xOverlapStart < xOverlapEnd and abs(yOverlapEnd - yOverlapStart) < margin*2:
+            sharedWallCoords = {
+                "direction": "horizontal",
+                "y": yOverlapEnd - margin,
+                "xStart": xOverlapStart,
+                "xEnd": xOverlapEnd
+            }
+            return sharedWallCoords
+
+
+def cmToMeter(cm):
+    return cm/100
+
+def cm2ToMeter2(cm2):
+    return cm2/10000
+
+def WToKw(W):
+    return W/1000
+
+def updateAppHeatLossCalculations(app):
+    print(f'Walls: {app.building.walls}')
+    print(f'Interior walls: {app.building.interiorWalls}')
+    for wall in app.building.walls:
+        print(f'Wall dims: {wall.length}')
+    print(f'Shared wall heat loss area: {app.building.totalSharedWallArea}')
+    print(f'Windows: {app.building.windows}')
+    for window in app.building.windows:
+        print(f'Window dims: {window.length, window.height, window.uValue}')
+    print(f'Doors: {app.building.doors}')
+    print(f'Floors: {app.building.floors}')
+    for floor in app.building.floors:
+        print(f'Floor dims: {floor.length, floor.width}')
+    print(f'Roofs: {app.building.roofs}')
+    for roof in app.building.roofs:
+        print(f'Roof dims: {roof.length, roof.width, roof.height}')
+    print(f'Rooms: {app.building.rooms}')
+    for room in app.building.rooms:
+        print(f'Room dims: {room.width, roof.height}')
+
+    print('\n')
+
+    print(f'totalWindowArea: {app.building.totalWindowArea}')
+    print(f'totalDoorArea: {app.building.totalDoorArea}')
+    print(f'totalWallArea: {app.building.totalWallArea}')
+    print(f'totalFloorArea: {app.building.totalFloorArea}')
+    print(f'totalRoofArea: {app.building.totalRoofArea}')
+    print(f'sharedWallArea: {app.building.totalSharedWallArea}')
+    
+    print('\n')
+    
+    print(f'wallsRValue: {app.building.wallsRValue}')
+    print(f'windowsRValue: {app.building.windowsRValue}')
+    print(f'doorsRValue: {app.building.doorsRValue}')
+    print(f'floorsRValue: {app.building.floorsRValue}')
+    print(f'roofsRValue: {app.building.roofsRValue}')
+
+    print('\n')
+    
+    print(f'wallsLayers: {app.building.wallsLayers}')
+    print(f'windowsLayers: {app.building.windowsLayers}')
+    print(f'doorsLayers: {app.building.doorsLayers}')
+    print(f'floorsLayers: {app.building.floorsLayers}')
+    print(f'roofsLayers: {app.building.roofsLayers}')
+
+    print('\n')
+
+    print(f'totalWindowUA: {app.building.totalWindowUA}')
+    print(f'totalDoorUA: {app.building.totalDoorUA}')
+    print(f'totalWallUA: {app.building.totalWallUA}')
+    print(f'totalFloorUA: {app.building.totalFloorUA}')
+    print(f'totalRoofUA: {app.building.totalRoofUA}')
+    for room in app.building.rooms:
+        print(f'Room heat loss: {room.calculateSharedWallHeatLoss()}')
+
+    print('\n')
+
+    print(f'infiltration: {app.building.calculateInfiltrationHeatLoss()}')
+    print(f'totalHeatLossCoefficient: {app.building.calculateTotalHeatLossCoefficient()}')
+    print(f'totalHeatLossCoefficitByComponent: {app.building.calculateTotalHeatLossCoefficientPerComponent()}')
+
+    print('\n')
+    
+    print(f'siteEUI: {app.building.calculateSiteEUI()}')

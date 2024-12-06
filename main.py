@@ -1,9 +1,9 @@
 from cmu_graphics import *
 from building_components import *
 from web_scraping import *
+import webbrowser
 from screens import *
 from utils import *
-import webbrowser
 
 def onAppStart(app):
     initializeHomeScreen(app)
@@ -55,7 +55,7 @@ def initilaizeBuilding(app):
     w3 = Wall(app.building.length, app.building.height, stdWallWidth, stdWallUValue, app.width/2-app.building.width/2, app.height/2-app.building.height/2) # left wall, top point
     app.building.walls = [w0,w1,w2,w3]
 
-    stdFloorHeigth = 15 # thickness
+    stdFloorHeigth = 15
     stdFloorUValue = 1.5
     stdRoofHeigth = 20
     stdRoofUValue = 0.15
@@ -78,7 +78,7 @@ and get energy analysis for each component to make informed decisions to improve
                        
 HOW
 ALWAYS FOLLOW THE LABEL SHORTCUTS! (e.g. 0,1,2,3,w,g,f,r)
-- Press S to recalculate and print heat loss of the building.
+- Click on the screen to recalculate and print heat loss of the building.
 - Use the keys 0, 1, 2, 3 to navigate between the screens.
 - 0. HOME: Choose to draw, detail, or calculate a new building or continue from the saved projects in Gallery.
 - 1. DRAW: Create a building plan by adding walls, windows, doors, and rooms.
@@ -162,74 +162,14 @@ def onKeyPress(app, key):
             app.screen = 'detailFloor'
         elif key == 'r':
             app.screen = 'detailRoof'
+
         
-    # print and recalculate heat loss
-    if key == 's':
-        print(app.building.walls)
-        print(app.building.interiorWalls)
-        for wall in app.building.walls:
-            print(wall.length)
-        print(f'Shared wall heat loss area: {app.building.totalSharedWallArea}')
-        print(app.building.windows)
-        for window in app.building.windows:
-            print(window.length, window.height, window.uValue)
-        print(app.building.doors)
-        print(app.building.floors)
-        for floor in app.building.floors:
-            print(floor.length, floor.width)
-        print(app.building.roofs)
-        for roof in app.building.roofs:
-            print(roof.length, roof.width, roof.height)
-        print(app.building.rooms)
-
-        print(f'totalWindowArea: {app.building.totalWindowArea}')
-        print(f'totalDoorArea: {app.building.totalDoorArea}')
-        print(f'totalWallArea: {app.building.totalWallArea}')
-        print(f'totalFloorArea: {app.building.totalFloorArea}')
-        print(f'totalRoofArea: {app.building.totalRoofArea}')
-        print(f'sharedWallArea: {app.building.totalSharedWallArea}')
-        
-        print('\n')
-        
-        print(f'wallsRValue: {app.building.wallsRValue}')
-        print(f'windowsRValue: {app.building.windowsRValue}')
-        print(f'doorsRValue: {app.building.doorsRValue}')
-        print(f'floorsRValue: {app.building.floorsRValue}')
-        print(f'roofsRValue: {app.building.roofsRValue}')
-
-        print('\n')
-        
-        print(f'wallsLayers: {app.building.wallsLayers}')
-        print(f'windowsLayers: {app.building.windowsLayers}')
-        print(f'doorsLayers: {app.building.doorsLayers}')
-        print(f'floorsLayers: {app.building.floorsLayers}')
-        print(f'roofsLayers: {app.building.roofsLayers}')
-
-        print('\n')
-
-        print(f'totalWindowUA: {app.building.totalWindowUA}')
-        print(f'totalDoorUA: {app.building.totalDoorUA}')
-        print(f'totalWallUA: {app.building.totalWallUA}')
-        print(f'totalFloorUA: {app.building.totalFloorUA}')
-        print(f'totalRoofUA: {app.building.totalRoofUA}')
-
-        print('\n')
-
-        print(f'infiltration: {app.building.calculateInfiltrationHeatLoss()}')
-        print(f'totalHeatLossCoefficient: {app.building.calculateTotalHeatLossCoefficient()}')
-        print(f'totalHeatLossCoefficitByComponent: {app.building.calculateTotalHeatLossCoefficientPerComponent()}')
-
-        print('\n')
-
-        print(f'annualHeatLossFunctionReturn: {app.building.calculateAnnualHeatLoss()}')
-        print(f'annualHeatLoss: {app.building.annualHeatLoss}')
-
-
 def onMouseMove(app, mouseX, mouseY):
     app.hx = mouseX
     app.hy = mouseY
 
 def onMousePress(app, mouseX, mouseY):
+    updateAppHeatLossCalculations(app)
     app.cx = mouseX
     app.cy = mouseY
 
@@ -272,15 +212,14 @@ def handleClickHomeScreen(app, mouseX, mouseY):
             elif mouseX > 2*app.width/3:
                 app.screen = 'calculate'
 
-    if mouseY > 700 and mouseY < 800:
+    if mouseY > 750 and mouseY < 950:
         for i in range(len(app.gallery.items)):
             if mouseX > 50 + i*app.gallery.galleryStep and mouseX < 50 + (i+1)*app.gallery.galleryStep:
                 app.building = app.gallery.items[i]
                 app.screen = 'draw'
     
-    if mouseY > app.height/1.6 and mouseY < app.height/1.6 + 50:
+    if mouseY > (app.height/1.6)+20 and mouseY < app.height/1.6 + 30:
             app.gallery.items = []
-
 
 def handleClickDrawScreen(app, mouseX, mouseY):   
     # top buttons 
@@ -355,15 +294,15 @@ def handleClickDrawScreen(app, mouseX, mouseY):
     if isMouseClickOnTheWall(app):
         snappedX, snappedY = snapToWall(app, mouseX, mouseY)
         if app.addWindow:
-            stdWindowLenght = 60
-            stdWindowHeight = 90
+            stdWindowLenght = 150
+            stdWindowHeight = 180
             stdWindowUValue = 5.8
             newWindow = Window(stdWindowLenght,stdWindowHeight,stdWindowUValue, snappedX, snappedY)
             app.building.windows.append(newWindow)
             newWindow.type = classifyComponentAllignment(app)
 
         if app.addDoor:
-            stdDoorLength = 80
+            stdDoorLength = 180
             stdDoorHeight = 210
             stdDoorUValue = 4.0
             newDoor = Door(stdDoorLength,stdDoorHeight,stdDoorUValue, snappedX, snappedY)
@@ -549,8 +488,12 @@ def handleClickDetailWallsScreen(app, mouseX, mouseY):
         if mouseX > 0 and mouseX < app.width/2:
             app.building.wallsRValue = pythonRound(1/float(app.getTextInput('Enter the U-Value of the walls: ')),2)
             app.building.calculateTotalHeatLossCoefficient()
+            app.building.calculateSiteEUI() 
+            app.building.calculateTotalHeatLossCoefficientPerComponent()
         elif mouseX > app.width:
-            app.building.calculateTotalHeatLossCoefficient()        
+            app.building.calculateTotalHeatLossCoefficient()
+            app.building.calculateSiteEUI() 
+            app.building.calculateTotalHeatLossCoefficientPerComponent()    
 
 def handleClickDetailWindowsScreen(app, mouseX, mouseY):
     # top buttons   
@@ -571,8 +514,12 @@ def handleClickDetailWindowsScreen(app, mouseX, mouseY):
         if mouseX > 0 and mouseX < app.width/2:
             app.building.windowsRValue = pythonRound(1/float(app.getTextInput('Enter the U-Value of the windows: ')),2)
             app.building.calculateTotalHeatLossCoefficient()
+            app.building.calculateSiteEUI() 
+            app.building.calculateTotalHeatLossCoefficientPerComponent()
         elif mouseX > app.width:
-            app.building.calculateTotalHeatLossCoefficient()     
+            app.building.calculateTotalHeatLossCoefficient()
+            app.building.calculateSiteEUI() 
+            app.building.calculateTotalHeatLossCoefficientPerComponent()     
 
 def handleClickDetailDoorsScreen(app, mouseX, mouseY):
     # top buttons
@@ -593,8 +540,12 @@ def handleClickDetailDoorsScreen(app, mouseX, mouseY):
         if mouseX > 0 and mouseX < app.width/2:
             app.building.doorsRValue = pythonRound(1/float(app.getTextInput('Enter the U-Value of the doors: ')),2)
             app.building.calculateTotalHeatLossCoefficient()
+            app.building.calculateSiteEUI() 
+            app.building.calculateTotalHeatLossCoefficientPerComponent()
         elif mouseX > app.width:
-            app.building.calculateTotalHeatLossCoefficient()     
+            app.building.calculateTotalHeatLossCoefficient()
+            app.building.calculateSiteEUI() 
+            app.building.calculateTotalHeatLossCoefficientPerComponent()    
 
 def handleClickDetailFloorScreen(app, mouseX, mouseY):
     # top buttons
@@ -615,8 +566,12 @@ def handleClickDetailFloorScreen(app, mouseX, mouseY):
         if mouseX > 0 and mouseX < app.width/2:
             app.building.floorsRValue = pythonRound(1/float(app.getTextInput('Enter the U-Value of the floors: ')),2)
             app.building.calculateTotalHeatLossCoefficient()
+            app.building.calculateSiteEUI() 
+            app.building.calculateTotalHeatLossCoefficientPerComponent()
         elif mouseX > app.width:
-            app.building.calculateTotalHeatLossCoefficient()     
+            app.building.calculateTotalHeatLossCoefficient()
+            app.building.calculateSiteEUI() 
+            app.building.calculateTotalHeatLossCoefficientPerComponent()    
 
 def handleClickDetailRoofScreen(app, mouseX, mouseY):
     # top buttons
@@ -637,8 +592,12 @@ def handleClickDetailRoofScreen(app, mouseX, mouseY):
         if mouseX > 0 and mouseX < app.width/2:
             app.building.roofsRValue = pythonRound(1/float(app.getTextInput('Enter the U-Value of the roofs: ')),2)
             app.building.calculateTotalHeatLossCoefficient()
+            app.building.calculateSiteEUI() 
+            app.building.calculateTotalHeatLossCoefficientPerComponent()
         elif mouseX > app.width:
-            app.building.calculateTotalHeatLossCoefficient()     
+            app.building.calculateTotalHeatLossCoefficient()
+            app.building.calculateSiteEUI() 
+            app.building.calculateTotalHeatLossCoefficientPerComponent()     
 
 
 def handleClickCalculateScreen(app, mouseX, mouseY):

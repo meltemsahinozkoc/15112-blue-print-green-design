@@ -4,11 +4,11 @@ Welcome!
 ### BLUE PRINT GREEN DESIGN
 
 ## Project Description
-**BLUE PRINT GREEN DESIGN** is an interactive app for anyone who wants to create and visualize simple building plans in 2D, calculate and visualize their heat loss, and get energy analysis for each component to make informed decisions to improve energy efficiency.
+**BLUE PRINT GREEN DESIGN** is an interactive, free, accessible and low-size app for anyone who wants to create and visualize simple building plans in 2D, calculate and visualize their heat loss, and get energy analysis for each component to make informed decisions to improve energy efficiency.
 
-The “Home” screen allows users to design layouts by defining the project name, location, and dimensions, as well as defining rooms, walls, windows, doors, floors, and roofs. The “Detail” screen allows users to either directly input component U-values (thermal transmittance) or enter material layers for each building component. The app uses web-scraping to fetch thermal conductivity values for component heat loss calculations. After the heat loss calculations, the “Calculate” screen breaks down the building’s heat loss, detects the least efficient components, and gives prioritized retrofit suggestions.
+The “Home” screen allows users to design layouts by defining the project name, location, and dimensions, as well as defining rooms, walls, windows, doors, floors, and roofs. The “Detail” screen allows users to either directly input component U-values (thermal transmittance) or enter material layers for each building component. The app uses web-scraping to fetch thermal conductivity values for component heat loss calculations. After the heat loss calculations, the “Calculate” screen breaks down the building’s heat loss in tabular form and graph visualization, detects the least efficient components, and gives prioritized retrofit suggestions.
 
-This project aims to integrate design and basic sustainability evaluation in a user-friendly, visually compelling interface.
+This project aims to integrate design and basic sustainability evaluation in a user-friendly, visually compelling interface and make it free, accessible and low size with an easy learning curve.
 
 
 ## Run Instructions
@@ -52,7 +52,7 @@ Run the following libraries to install the necessary libraries:
 
 ### Data Input & Updates
 - **Heat Loss Calculation**:
-  - Press **`s`** to update and print building details, heat loss coefficients, and component information to the console for testing and validation.
+  - Press anywhere on the screen to update and print building details, heat loss coefficients, and component information to the console for testing and validation.
 
 ### Mouse Events
 - **Mouse Clicks**: Used to add components such as **windows**, **doors**, and **rooms** to the building.
