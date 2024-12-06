@@ -2,7 +2,6 @@ from cmu_graphics import *
 from building_components import *
 from utils import *
 
-
 def drawBg(app):
     drawRect(0,0,app.width, app.height, fill = app.fill)
 

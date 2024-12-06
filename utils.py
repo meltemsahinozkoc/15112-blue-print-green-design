@@ -20,7 +20,7 @@ class Button:
                      self.buttonHeight, border=app.secondFill, borderWidth=1,
                      fill=fill, opacity=40)
             drawLabel(self.text[i], (i + 0.5) * self.buttonStep, self.top + self.buttonHeight / 2,
-                      font='monospace', fill=app.secondFill, bold=True, size=16)
+                      font=app.font, fill=app.secondFill, bold=True, size=16)
         
     def mouseOver(self, i):
         if app.hx is not None and app.hy is not None:
