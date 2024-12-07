@@ -1,14 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
 
-'''
-I structured the GET request to the website and checking validity (status code 200, 401, 404) myself. 
-However, I received help from ChatGPT model 4-o with canvas to structre the code after parsing html with beautifulsoup.
-I used the LLM as an assistant. I didn't directly copy and paste the code. Instead, I made the generative model generate the code based on my prompt,
-then applied the 5-mins rule and wrote the code snippets myself. I also indicated the part I received assistance from the LLM.
-I know what the code is doing and I am confident that I can explain it (As I already explained in TP0 tech demo!).
-'''
-
 def fetchFilteredThermalData():
     url = 'https://neutrium.net/heat-transfer/thermal-conductivity-of-common-materials/'
     response = requests.get(url)
@@ -64,9 +56,6 @@ def fetchFilteredThermalData():
                     'Conductivity (BTU·ft/h·°F)': conductivity_btu_ft_h_f
                 })
     return data
-    ############################################################
-    # LLM ASSISTANCE ENDS HERE
-    ############################################################ 
 
 thermalData = fetchFilteredThermalData()
 # for entry in thermalData: # entry is a dictionary
