@@ -1,5 +1,3 @@
-Welcome!
-
 ## Project Title
 ### BLUE PRINT GREEN DESIGN
 
@@ -10,6 +8,7 @@ The “Home” screen allows users to design layouts by defining the project nam
 
 This project aims to integrate design and basic sustainability evaluation in a user-friendly, visually compelling interface and make it free, accessible and low size with an easy learning curve.
 
+[![Watch the video](https://img.youtube.com/vi/JZKJyPyYDbk/maxresdefault.jpg)](https://www.youtube.com/watch?v=JZKJyPyYDbk)
 
 ## Run Instructions
 ### Running the Project
